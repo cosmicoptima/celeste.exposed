@@ -191,7 +191,7 @@ function randomizeCSS() {
   ` + promptEnding;
   axios.post("/api/copilot", {
     prompt: cssPrompt,
-    max_tokens: 100,
+    max_tokens: 200,
     temperature: 1.7,
   }).then((res) => {
     document.getElementById("random-css").innerHTML = promptEnding + res.data.output;

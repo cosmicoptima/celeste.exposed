@@ -1,5 +1,6 @@
 var axios = require("axios");
 var dedent = require("dedent");
+var getEmoji = require("get-random-emoji");
 var scriptjs = require("scriptjs");
 var wikidata = require("wikidata-sdk");
 var rows = {};
@@ -93,6 +94,8 @@ function coinflip() {
     ]
   );
 }
+
+document.getElementById("celeste").innerHTML += " " + getEmoji()
 
 scriptjs(
   "https://cdn.jsdelivr.net/npm/jaaulde-cookies/lib/jaaulde-cookies.min.js",

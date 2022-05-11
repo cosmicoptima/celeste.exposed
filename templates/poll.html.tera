@@ -2,35 +2,35 @@
 
 <html>
 <head>
-  <title>poll ({{ id }}) - celeste</title>
+  <title>poll ({{id}}) - celeste</title>
   <link rel="stylesheet" href="/style.css" type="text/css">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="twitter:card" content="player">
-  <meta name="twitter:title" content="poll {{ id }} - celeste">
+  <meta name="twitter:title" content="poll {{id}} - celeste">
   <meta name="twitter:description" content=
   "click to expand this poll">
   <meta name="twitter:site" content="@0x49fa98">
   <meta name="twitter:image" content=
   "https://pbs.twimg.com/profile_banners/1252277511746183168/1634157849/1500x500">
   <meta name="twitter:player" content=
-  "https://celeste.exposed/poll/{{ id }}">
+  "https://celeste.exposed/poll/{{id}}">
   <meta name="twitter:player:width" content="1080">
   <meta name="twitter:player:height" content="720">
 </head>
 
 <body>
   {% for option in data.votes %}
-  <div>
-    <input type="radio" id="option-{{ loop.index }}" name="poll">
-    <label for="option-{{ loop.index }}">
-      <span id="name-{{ loop.index }}">{{ option.name }}</span>
-      <span id="votes-{{ loop.index }}" style="display: none; color: #777;"></span>
-    </label>
-  </div>
+    <div>
+      <input type="radio" id="option-{{loop.index}}" name="poll">
+      <label for="option-{{loop.index}}">
+        <span id="name-{{loop.index}}">{{option.name}}</span>
+        <span id="votes-{{loop.index}}" style="display: none; color: #777;"></span>
+      </label>
+    </div>
   {% endfor %}
   <button id="submit-poll" style="margin-top: 1em;">submit &amp; see results</button>
   <script type="text/javascript">
-      const pollID = "{{ id }}"
+      const pollID = "{{id}}"
       var fingerprint
 
       const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')

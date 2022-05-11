@@ -33,7 +33,7 @@ settle a dispute:
       src='https://overengineering.kognise.dev/embed/celeste'
       width='100%' 
       height='100' 
-      style='user-select: none;'
+      style='background-color: #fff; user-select: none;'
       frameBorder='0'>
   </iframe>
 </div>

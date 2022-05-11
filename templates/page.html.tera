@@ -15,6 +15,33 @@
 </head>
 
 <body>
-  {{body | safe}}
+  <div id="new-minutes"></div>
+  <main>
+    {{body | safe}}
+  </main>
+
+  <script type="module">
+    import { nanoid } from 'https://cdn.jsdelivr.net/npm/nanoid/nanoid.js'
+
+    function newMinute() {
+      var id = nanoid()
+      document.getElementById("new-minutes").insertAdjacentHTML("beforeend", `
+      <div class="new-minute" id="new-minute-${id}">
+        a new minute has dawned&nbsp;
+        <a href="#" id="new-minute-ok-${id}">[ok]</a>
+        <a href="#" onclick="alert('You cannot cancel the passage of time.')">[cancel]</a>
+      </div>
+      `)
+      document.getElementById(`new-minute-ok-${id}`).addEventListener("click", function() {
+        document.getElementById(`new-minute-${id}`).style.display = "none"
+      }, true)
+    }
+
+    var delay = new Date().getTime() % 60000
+    setTimeout(() => {
+      newMinute()
+      setInterval(newMinute, 60000)
+    }, delay)
+  </script>
 </body>
 </html>

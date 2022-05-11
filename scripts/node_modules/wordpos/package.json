@@ -1,0 +1,76 @@
+{
+  "name": "wordpos",
+  "version": "2.1.0",
+  "description": "wordpos is a set of part-of-speech utilities for Node.js & browser using the WordNet database.",
+  "author": "Moos <mooster@42at.com>",
+  "keywords": [
+    "natural",
+    "language",
+    "wordnet",
+    "adjectives",
+    "nouns",
+    "adverbs",
+    "verbs"
+  ],
+  "homepage": "https://github.com/moos/wordpos",
+  "engines": {
+    "node": ">=6"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "lib",
+    "src",
+    "test",
+    "!test/dict",
+    "tools"
+  ],
+  "bin": "./bin/wordpos-cli.js",
+  "dependencies": {
+    "commander": "^2.20.3",
+    "underscore": ">=1.3.1",
+    "wordnet-db": "^3.1.14"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.7.7",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/plugin-proposal-decorators": "^7.7.4",
+    "@babel/plugin-proposal-do-expressions": "^7.7.4",
+    "@babel/plugin-proposal-export-default-from": "^7.7.4",
+    "@babel/plugin-proposal-export-namespace-from": "^7.7.4",
+    "@babel/plugin-proposal-function-sent": "^7.7.4",
+    "@babel/plugin-proposal-json-strings": "^7.7.4",
+    "@babel/plugin-proposal-logical-assignment-operators": "^7.7.4",
+    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.7.4",
+    "@babel/plugin-proposal-numeric-separator": "^7.7.4",
+    "@babel/plugin-proposal-optional-chaining": "^7.7.5",
+    "@babel/plugin-proposal-pipeline-operator": "^7.7.7",
+    "@babel/plugin-proposal-throw-expressions": "^7.7.4",
+    "@babel/plugin-syntax-dynamic-import": "^7.7.4",
+    "@babel/plugin-syntax-import-meta": "^7.7.4",
+    "@babel/preset-env": "^7.7.7",
+    "@babel/register": "^7.7.7",
+    "babel-plugin-dynamic-import-node": "^2.3.0",
+    "chai": "^4.2.0",
+    "mini-bench": "^1.0.0",
+    "mocha": "^5.2.0",
+    "parcel": "^1.12.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/moos/wordpos.git"
+  },
+  "main": "./src/node/index.js",
+  "browser": "./src/browser/index.js",
+  "scripts": {
+    "postinstall": "node tools/stat.js --no-stats index.adv index.adj index.verb index.noun",
+    "build": "parcel build --detailed-report -d dist -o wordpos.min.js --global WordPOS -t browser src/browser/index.js",
+    "postbuild": "sed -i 's/ES6_IMPORT/import/' dist/wordpos.min.js && node tools/banner.js | cat - dist/wordpos.min.js > _tmp_ && mv _tmp_ dist/wordpos.min.js",
+    "prepare": "npm run build",
+    "pretest": "node tools/makeJsonDict.js index data",
+    "test": "npm run test-node && npm run test-browser",
+    "test-node": "mocha test --exclude test/browser_test.js",
+    "test-browser": "mocha test/browser_test test/wordpos_test  --require @babel/register"
+  },
+  "license": "MIT"
+}

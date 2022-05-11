@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>{{title}} - celeste</title>
+  <link rel="stylesheet" href="/style.css" type="text/css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="celeste">
+  <meta property="og:title" content="{{title}}">
+  <meta property="og:description" content="{{desc}}">
+  <meta property="og:image" content=
+  "https://pbs.twimg.com/profile_banners/1252277511746183168/1634157849/1500x500">
+</head>
+
+<body>
+  {{body | safe}}
+</body>
+</html>

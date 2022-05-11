@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>poll ({{ id }}) - celeste</title>
+  <link rel="stylesheet" href="/style.css" type="text/css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="player">
+  <meta name="twitter:title" content="poll {{ id }} - celeste">
+  <meta name="twitter:description" content=
+  "click to expand this poll">
+  <meta name="twitter:site" content="@0x49fa98">
+  <meta name="twitter:image" content=
+  "https://pbs.twimg.com/profile_banners/1252277511746183168/1634157849/1500x500">
+  <meta name="twitter:player" content=
+  "https://celeste.exposed/poll/{{ id }}">
+  <meta name="twitter:player:width" content="1080">
+  <meta name="twitter:player:height" content="720">
+</head>
+
+<body>
+  {% for option in data.votes %}
+  <div>
+    <input type="radio" id="option-{{ loop.index }}" name="poll">
+    <label for="option-{{ loop.index }}">
+      <span id="name-{{ loop.index }}">{{ option.name }}</span>
+      <span id="votes-{{ loop.index }}" style="display: none; color: #777;"></span>
+    </label>
+  </div>
+  {% endfor %}
+  <button id="submit-poll" style="margin-top: 1em;">submit &amp; see results</button>
+  <script type="text/javascript">
+      const pollID = "{{ id }}"
+      var fingerprint
+
+      const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
+        .then(FingerprintJS => FingerprintJS.load())
+      fpPromise
+        .then(fp => fp.get())
+        .then(result => {
+          fingerprint = result.visitorId
+          let xhr = new XMLHttpRequest()
+          xhr.open('POST', '/api/poll/voted')
+          xhr.setRequestHeader('Content-Type', 'application/json')
+          xhr.onreadystatechange = () => {
+            if (xhr.readyState === 4) {
+              let response = JSON.parse(xhr.response)
+              if (response.voted) { submit(false) }
+            }
+          }
+          xhr.send(JSON.stringify({
+            poll_id: pollID,
+            fingerprint: fingerprint
+          }))
+        })
+
+      function submit() {
+        fetch(`/api/poll/get/${pollID}`).then(response => response.json()).then(data => {
+          let votes = data.poll.votes
+          let totalVotes = votes.reduce((acc, cur) => acc + cur.votes, 0)
+
+          options = document.getElementsByName("poll")
+          let index = 1
+          for (option in options) {
+            var voteSpan = document.getElementById(`votes-${index}`)
+
+            if (options[option].checked) {
+              xhr = new XMLHttpRequest()
+              xhr.open("POST", "/api/poll/vote", true)
+              xhr.setRequestHeader("Content-Type", "application/json")
+              xhr.send(JSON.stringify({
+                poll_id: pollID,
+                option: document.getElementById(`name-${index}`).innerHTML,
+                fingerprint: fingerprint
+              }))
+            }
+
+            try {
+              voteSpan.innerHTML = `[${votes[index - 1].votes}/${totalVotes}]`
+              voteSpan.style.display = "inline"
+            }
+            catch (e) { }
+
+            index++
+          }
+
+          document.getElementById("submit-poll").style.display = "none"
+        })
+      }
+
+      document.getElementById("submit-poll").onclick = () => submit(true)
+  </script>
+</body>
+</html>

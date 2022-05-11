@@ -10,7 +10,7 @@
   \+ [ads](/ads)  
   \+ [copilot playground](/copilot)
 </span>
-^ <i><a href="#" id="show-more-links">show more...</a></i>
+\+ <i><a href="#" id="show-more-links">show more...</a></i>
 
 did you know?  
 <div>

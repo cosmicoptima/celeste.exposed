@@ -2,6 +2,7 @@
 
 <span id="subheader">...</span>
 
+\- [about](/about)  
 \- [twitter](https://twitter.com/parafactual)  
 \- [github](https://github.com/cosmicoptima)  
 \- [alignment charts](/alignment)  

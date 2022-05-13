@@ -113,6 +113,11 @@ fn index_page() -> Result<Template, Status> {
     render("index", "celeste homepage", "pages/index.md")
 }
 
+#[get("/about")]
+fn about_page() -> Result<Template, Status> {
+    render("about", "...", "pages/about.md")
+}
+
 #[get("/ads")]
 fn ads_page() -> Result<Template, Status> {
     render("ads", "...", "pages/ads.md")
@@ -264,6 +269,7 @@ fn rocket() -> _ {
                 source_code_pro_400,
                 source_code_pro_700,
                 index_page,
+                about_page,
                 ads_page,
                 alignment_page,
                 copilot_page,

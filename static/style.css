@@ -3,16 +3,19 @@
     font-weight: 400;
     src: url(LibreBaskerville-400.woff2);
 }
+
 @font-face {
     font-family: "Libre Baskerville";
     font-weight: 700;
     src: url(LibreBaskerville-700.woff2);
 }
+
 @font-face {
     font-family: "Source Code Pro";
     font-weight: 400;
     src: url(SourceCodePro-400.woff2);
 }
+
 @font-face {
     font-family: "Source Code Pro";
     font-weight: 700;
@@ -27,7 +30,9 @@ body {
 }
 
 @media screen and (max-width: 600px) {
-    body { font-size: 0.8em; }
+    body {
+        font-size: 0.8em;
+    }
 }
 
 main {
@@ -35,13 +40,13 @@ main {
     margin: 2em auto;
 }
 
-#new-minutes {
+#banners {
     position: fixed;
     top: 0;
     left: 0;
 }
 
-.new-minute {
+.banner {
     background-color: #000;
     color: #fff;
 
@@ -49,11 +54,21 @@ main {
     padding: 0.75em;
 }
 
-.new-minute a { color: #88f; }
-.new-minute a:hover { color: #44c; }
-.new-minute a:visited { color: #88f; }
+.new-minute a {
+    color: #88f;
+}
 
-a { text-decoration: none; }
+.new-minute a:hover {
+    color: #44c;
+}
+
+.new-minute a:visited {
+    color: #88f;
+}
+
+a {
+    text-decoration: none;
+}
 
 /* usually sup affects line height */
 sup {
@@ -72,7 +87,9 @@ textarea {
     padding: 0.5em;
 }
 
-.advertisement { margin-bottom: 1em; }
+.advertisement {
+    margin-bottom: 1em;
+}
 
 .code {
     font-family: "Source Code Pro";
@@ -91,9 +108,15 @@ textarea {
 }
 
 @media screen and (max-width: 60rem) {
-    .webring-embed { width: 80vw; }
+    .webring-embed {
+        width: 80vw;
+    }
 }
 
-.poll-row { margin-bottom: 0.25em; }
+.poll-row {
+    margin-bottom: 0.25em;
+}
 
-.footnotes { font-size: 0.9em; }
+.footnotes {
+    font-size: 0.9em;
+}

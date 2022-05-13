@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
 <html>
+
 <head>
   <title>{{title}} - celeste</title>
   <link rel="stylesheet" href="/style.css" type="text/css">
@@ -10,12 +11,11 @@
   <meta property="og:site_name" content="celeste">
   <meta property="og:title" content="{{title}}">
   <meta property="og:description" content="{{desc}}">
-  <meta property="og:image" content=
-  "https://pbs.twimg.com/profile_banners/1252277511746183168/1634157849/1500x500">
+  <meta property="og:image" content="https://pbs.twimg.com/profile_banners/1252277511746183168/1634157849/1500x500">
 </head>
 
 <body>
-  <div id="new-minutes"></div>
+  <div id="banners"></div>
   <main>
     {{body | safe}}
   </main>
@@ -25,14 +25,14 @@
 
     function newMinute() {
       var id = nanoid()
-      document.getElementById("new-minutes").insertAdjacentHTML("beforeend", `
-      <div class="new-minute" id="new-minute-${id}">
+      document.getElementById("banners").insertAdjacentHTML("beforeend", `
+      <div class="banner" id="new-minute-${id}">
         a new minute has dawned&nbsp;
         <a href="#" id="new-minute-ok-${id}">[ok]</a>
         <a href="#" onclick="alert('You cannot cancel the passage of time.')">[cancel]</a>
       </div>
       `)
-      document.getElementById(`new-minute-ok-${id}`).addEventListener("click", function() {
+      document.getElementById(`new-minute-ok-${id}`).addEventListener("click", function () {
         document.getElementById(`new-minute-${id}`).style.display = "none"
       }, true)
     }
@@ -44,4 +44,5 @@
     }, delay)
   </script>
 </body>
+
 </html>

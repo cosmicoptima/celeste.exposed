@@ -31,6 +31,10 @@ struct JSResponse(String);
 #[response(content_type = "font/woff2")]
 struct FontResponse(Vec<u8>);
 
+#[derive(Responder)]
+#[response(content_type = "image/x-icon")]
+struct IconResponse(Vec<u8>);
+
 #[get("/style.css")]
 fn css() -> CSSResponse {
     CSSResponse(include_str!("../static/style.css").to_string())
@@ -69,6 +73,11 @@ fn source_code_pro_400() -> FontResponse {
 #[get("/SourceCodePro-700.woff2")]
 fn source_code_pro_700() -> FontResponse {
     FontResponse(include_bytes!("../static/SourceCodePro-700.woff2").to_vec())
+}
+
+#[get("/favicon.ico")]
+fn favicon() -> IconResponse {
+    IconResponse(include_bytes!("../static/favicon.ico").to_vec())
 }
 
 // pages
@@ -268,6 +277,7 @@ fn rocket() -> _ {
                 libre_baskerville_700,
                 source_code_pro_400,
                 source_code_pro_700,
+                favicon,
                 index_page,
                 about_page,
                 ads_page,

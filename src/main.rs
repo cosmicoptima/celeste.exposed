@@ -197,6 +197,15 @@ fn get_poll_endpoint(poll_id: String) -> Result<Json<Value>, status::Custom<Json
 #[post("/api/poll/create", format = "json", data = "<options>")]
 fn new_poll_endpoint(options: Json<Vec<String>>) -> Json<Value> {
     let poll_id = poll::create_poll(options.into_inner());
+    notify::notify(
+        format!(
+            "new poll with url: https://celeste.exposed/poll/{}",
+            poll_id
+        )
+        .as_str(),
+        "ballot_box",
+    )
+    .unwrap();
     Json(json!({
         "ok": true,
         "url": format!("https://celeste.exposed/poll/{}", poll_id)

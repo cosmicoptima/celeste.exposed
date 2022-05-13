@@ -44,6 +44,8 @@ main {
     position: fixed;
     top: 0;
     left: 0;
+
+    z-index: 1;
 }
 
 .banner {
@@ -54,20 +56,36 @@ main {
     padding: 0.75em;
 }
 
-.new-minute a {
+.banner a {
     color: #88f;
 }
 
-.new-minute a:hover {
+.banner a:hover {
     color: #44c;
 }
 
-.new-minute a:visited {
+.banner a:visited {
     color: #88f;
+}
+
+.go-home {
+    position: fixed;
+    top: 1.25em;
+    right: 2em;
+
+    color: #888;
+}
+
+.go-home:visited {
+    color: #888;
 }
 
 a {
     text-decoration: none;
+}
+
+a:visited {
+    color: #00f;
 }
 
 /* usually sup affects line height */

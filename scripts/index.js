@@ -81,7 +81,7 @@ function reloadFunFact() {
 function coinflip() {
   document.getElementById("coinflip").innerHTML = randomChoice(
     [
-      "heads!", 
+      "heads!",
       "tails!",
       "it lands on its side",
       "you lose the coin",
@@ -135,6 +135,7 @@ function toggleLinks() {
   allLinksVisible = !allLinksVisible;
   document.getElementById("more-links").style.display = allLinksVisible ? "block" : "none";
   document.getElementById("show-more-links").innerHTML = allLinksVisible ? "hide…" : "show more…";
+  document.getElementById("show-more-links-plus-minus").innerHTML = allLinksVisible ? "-" : "+";
 }
 document.getElementById("show-more-links").onclick = toggleLinks;
 
@@ -143,9 +144,9 @@ function randomizeCSS() {
 
   var randomComment = randomChoice(
     ["/* hmm, maybe this will work? */\n",
-     "/* colors!!! */\n",
-     "/* now it's time to get serious */\n",
-     "/* now it's time to get serious */\n",
+      "/* colors!!! */\n",
+      "/* now it's time to get serious */\n",
+      "/* now it's time to get serious */\n",
     ]
   )
   var randomElement = randomChoice([

@@ -17,6 +17,7 @@
 <body>
   <div id="banners"></div>
   <main>
+    <a href="/" class="go-home">&larr; home</a>
     {{body | safe}}
   </main>
 

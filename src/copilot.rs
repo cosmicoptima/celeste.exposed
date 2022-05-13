@@ -4,6 +4,7 @@ use nom::{
     multi::many1,
     IResult,
 };
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::env;
@@ -16,6 +17,7 @@ pub struct Request {
     pub top_p: Option<f64>,
 }
 
+#[derive(Debug)]
 pub enum Error {
     ZeroMaxTokens,
     PromptTooLong,
@@ -39,7 +41,7 @@ struct CopilotRequest {
 }
 
 fn get_copilot_token() -> anyhow::Result<String> {
-    let client = reqwest::Client::new();
+    let client = Client::new();
     let oauth_token = env::var("COPILOT_OAUTH_TOKEN")?;
     Ok(client
         .get("https://api.github.com/copilot_internal/token")
@@ -77,7 +79,7 @@ pub fn get_copilot(
     top_p: f64,
 ) -> Result<String, Error> {
     let token =
-        get_copilot_token().map_err(|_| Error::UnknownError("Could not get token".to_string()))?;
+        get_copilot_token().map_err(|e| Error::UnknownError("Could not get token".to_string()))?;
 
     if max_tokens == 0 {
         return Err(Error::ZeroMaxTokens);
@@ -92,7 +94,7 @@ pub fn get_copilot(
         return Err(Error::InvalidTopP);
     }
 
-    let client = reqwest::Client::new();
+    let client = Client::new();
     let mut response = client
         .post("https://copilot-proxy.githubusercontent.com/v1/engines/copilot-codex/completions")
         .header("Authorization", format!("Bearer {}", token))

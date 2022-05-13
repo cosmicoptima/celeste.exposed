@@ -5,6 +5,7 @@
 \- [twitter](https://twitter.com/parafactual)  
 \- [github](https://github.com/cosmicoptima)  
 \- [alignment charts](/alignment)  
+\- [create a poll](/poll)  
 \- [???](/dictator)  
 <span class="collapsed" id="more-links">
   \+ [ads](/ads)  

@@ -36,10 +36,11 @@ function getCopilot() {
     max_tokens: maxTokens,
     temperature: temperature,
     top_p: topP
-  }).then(function(response) {
+  }).then(function (response) {
     document.getElementById("output-body").innerHTML =
       `<b>${new Option(promptText).innerHTML}</b>${new Option(response.data.output).innerHTML}`
-  }).catch(function(error) {
+  }).catch(function (error) {
+    console.log(error)
     document.getElementById("output-body").innerHTML = "[error]"
   });
 }

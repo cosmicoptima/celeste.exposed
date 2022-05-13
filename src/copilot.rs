@@ -17,7 +17,6 @@ pub struct Request {
     pub top_p: Option<f64>,
 }
 
-#[derive(Debug)]
 pub enum Error {
     ZeroMaxTokens,
     PromptTooLong,
@@ -79,7 +78,7 @@ pub fn get_copilot(
     top_p: f64,
 ) -> Result<String, Error> {
     let token =
-        get_copilot_token().map_err(|e| Error::UnknownError("Could not get token".to_string()))?;
+        get_copilot_token().map_err(|_| Error::UnknownError("Could not get token".to_string()))?;
 
     if max_tokens == 0 {
         return Err(Error::ZeroMaxTokens);

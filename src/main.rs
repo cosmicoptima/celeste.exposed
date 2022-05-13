@@ -170,7 +170,10 @@ fn copilot_endpoint(
     let temperature = temperature.unwrap_or(1.0);
     let top_p = top_p.unwrap_or(0.9);
 
-    match notify::notify(format!("Copilot request with prompt: {}", prompt.clone())) {
+    match notify::notify(
+        format!("copilot request with prompt: {}", prompt.clone()).as_str(),
+        "airplane",
+    ) {
         Ok(_) => (),
         Err(e) => return Err(json_error(Status::InternalServerError, e.to_string())),
     }
@@ -178,10 +181,7 @@ fn copilot_endpoint(
     let output = copilot::get_copilot(prompt, max_tokens, temperature, top_p);
     match output {
         Ok(output) => Ok(Json(json!({ "ok": true, "output": output }))),
-        Err(e) => {
-            eprintln!("{:?}", e);
-            Err(json_error(Status::BadRequest, "...".to_string()))
-        } // TODO placeholder
+        Err(_) => Err(json_error(Status::BadRequest, "...".to_string())),
     }
 }
 

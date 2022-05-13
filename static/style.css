@@ -80,6 +80,14 @@ main {
     color: #888;
 }
 
+#dont-go-home-text {
+    position: fixed;
+    top: 2em;
+    right: 2em;
+
+    color: #888;
+}
+
 a {
     text-decoration: none;
 }

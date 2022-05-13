@@ -17,7 +17,12 @@
 <body>
   <div id="banners"></div>
   <main>
+    {% if title == "index" %}
+    <a href="#" id="dont-go-home" class="go-home">&larr; home</a>
+    <p id="dont-go-home-text" />
+    {% else %}
     <a href="/" class="go-home">&larr; home</a>
+    {% endif %}
     {{body | safe}}
   </main>
 

@@ -203,6 +203,23 @@ document.getElementById("randomize-css").onclick = randomizeCSS;
 
 document.getElementById("flip-a-coin").onclick = coinflip;
 
+document.getElementById("dont-go-home").onclick = () => {
+  document.getElementById("dont-go-home-text").innerHTML = "you're already here, idiot";
+  document.getElementById("dont-go-home-text").style.opacity = 1.0;
+  setTimeout(() => {
+    let opacity = 1.0;
+    let interval = setInterval(() => {
+      opacity -= 0.01;
+      if (opacity < 0) {
+        clearInterval(interval);
+        opacity = 0;
+      }
+      document.getElementById("dont-go-home-text").style.opacity = opacity;
+    }
+      , 7);
+  }, 1500);
+};
+
 axios.get("https://quarry.wmcloud.org/run/45013/output/1/json").then((res) => {
   // wait till the data is loaded to enable the reload button and load the initial triple
   rows = res.data.rows;

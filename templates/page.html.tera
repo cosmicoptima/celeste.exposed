@@ -18,7 +18,7 @@
   <div id="banners"></div>
   <main>
     {% if title == "index" %}
-    <a href="#" id="dont-go-home" class="go-home">&larr; home</a>
+    <a href="javascript:void" id="dont-go-home" class="go-home">&larr; home</a>
     <p id="dont-go-home-text" />
     {% else %}
     <a href="/" class="go-home">&larr; home</a>
@@ -29,19 +29,45 @@
   <script type="module">
     import { nanoid } from 'https://cdn.jsdelivr.net/npm/nanoid/nanoid.js'
 
+    function randomChoice(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function celesteTip() {
+      let id = nanoid()
+      let tip = randomChoice([
+        "nothing is ever a coincidence",
+        "you will never experience this moment again",
+        "celeste prefers wet celeste food to dry celeste food",
+        "celeste will notice and investigate any change in its environment",
+      ])
+
+      document.getElementById("banners").insertAdjacentHTML("beforeend", `
+      <div class="banner" id="celeste-tip-${id}">
+        &#128161; ${tip}&nbsp;
+        <a href="javascript:void" id="celeste-tip-ok-${id}">[ok]</a>
+      </div>
+      `)
+      document.getElementById(`celeste-tip-ok-${id}`).addEventListener("click", function () {
+        document.getElementById(`celeste-tip-${id}`).style.display = "none"
+      }, true)
+    }
+
     function newMinute() {
-      var id = nanoid()
+      let id = nanoid()
       document.getElementById("banners").insertAdjacentHTML("beforeend", `
       <div class="banner" id="new-minute-${id}">
         a new minute has dawned&nbsp;
-        <a href="#" id="new-minute-ok-${id}">[ok]</a>
-        <a href="#" onclick="alert('You cannot cancel the passage of time.')">[cancel]</a>
+        <a href="javascript:void" id="new-minute-ok-${id}">[ok]</a>
+        <a href="javascript:void" onclick="alert('You cannot cancel the passage of time.')">[cancel]</a>
       </div>
       `)
       document.getElementById(`new-minute-ok-${id}`).addEventListener("click", function () {
         document.getElementById(`new-minute-${id}`).style.display = "none"
       }, true)
     }
+
+    setTimeout(celesteTip, Math.random() * 5000 + 2000)
 
     var delay = new Date().getTime() % 60000
     setTimeout(() => {

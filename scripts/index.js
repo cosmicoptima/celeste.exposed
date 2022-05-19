@@ -217,7 +217,7 @@ document.getElementById("dont-go-home").onclick = () => {
       document.getElementById("dont-go-home-text").style.opacity = opacity;
     }
       , 7);
-  }, 1500);
+  }, 1250);
 };
 
 axios.get("https://quarry.wmcloud.org/run/45013/output/1/json").then((res) => {

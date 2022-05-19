@@ -67,7 +67,7 @@
       }, true)
     }
 
-    setTimeout(celesteTip, Math.random() * 5000 + 2000)
+    if(Math.random() > 0.8) setTimeout(celesteTip, Math.random() * 5000 + 2000)
 
     var delay = new Date().getTime() % 60000
     setTimeout(() => {

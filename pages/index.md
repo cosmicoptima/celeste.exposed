@@ -5,6 +5,7 @@
 \- [about](/about)  
 \- [twitter](https://twitter.com/parafactual)  
 \- [github](https://github.com/cosmicoptima)  
+\- [give me anonymous feedback](https://admonymous.co/celeste)  
 \- [alignment charts](/alignment)  
 \- [create a poll](/poll)  
 \- [???](/dictator)  

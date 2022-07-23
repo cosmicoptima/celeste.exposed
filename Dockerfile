@@ -9,7 +9,6 @@ RUN npm install -g browserify
 
 RUN make
 
-# letsencrypt
 RUN apt-get update
 RUN apt-get install -y certbot
 RUN certbot --certonly -d celeste.exposed -m "parafactual@gmail.com" --non-interactive --agree-tos

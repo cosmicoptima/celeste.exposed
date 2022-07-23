@@ -3,6 +3,6 @@ FROM rust:1.61.0
 WORKDIR /usr/src/celeste
 COPY . .
 
-RUN cargo install --path .
+RUN make
 
-CMD ["make", "&&", "cargo", "run", "--release"]
+CMD ["cargo", "run", "--release"]

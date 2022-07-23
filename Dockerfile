@@ -5,7 +5,7 @@ COPY . .
 
 RUN apt-get update
 RUN apt-get install -y certbot
-RUN certbot --certonly -d celeste.exposed -m "parafactual@gmail.com" --non-interactive --agree-tos
+RUN certbot certonly --standalone -d celeste.exposed -m "parafactual@gmail.com" --non-interactive --agree-tos
 
 RUN apt-get update
 RUN apt-get install -y npm

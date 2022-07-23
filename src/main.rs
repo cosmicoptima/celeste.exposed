@@ -263,6 +263,7 @@ fn rocket() -> _ {
         .mount(
             "/",
             routes![
+                embed_css,
                 css,
                 index_js,
                 alignment_js,

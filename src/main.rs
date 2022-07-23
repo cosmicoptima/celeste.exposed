@@ -193,6 +193,17 @@ fn copilot_endpoint(
     }
 }
 
+#[derive(serde::Deserialize)]
+struct Feedback {
+    feedback: String,
+}
+
+#[post("/api/feedback", format = "json", data = "<feedback>")]
+fn feedback_endpoint(feedback: Json<Feedback>) {
+    let Feedback { feedback } = feedback.into_inner();
+    notify::notify(format!("feedback: {}", feedback).as_str(), "exclamation").unwrap()
+}
+
 #[get("/api/poll/get/<poll_id>")]
 fn get_poll_endpoint(poll_id: String) -> Result<Json<Value>, status::Custom<Json<Value>>> {
     match poll::get_poll(poll_id) {
@@ -279,6 +290,7 @@ fn rocket() -> _ {
                 alignment_page,
                 poll_page,
                 copilot_endpoint,
+                feedback_endpoint,
                 get_poll_endpoint,
                 new_poll_endpoint,
                 vote_poll_endpoint,

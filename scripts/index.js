@@ -231,6 +231,12 @@ document.getElementById("dont-go-home").onclick = () => {
   }, 1250);
 };
 
+document.getElementById("submit-feedback").onclick = () => {
+  const feedback = document.getElementById("feedback-box").value;
+  axios.post("/api/feedback", { feedback });
+  document.getElementById("feedback-box").value = "";
+}
+
 axios.get("https://quarry.wmcloud.org/run/45013/output/1/json").then((res) => {
   // wait till the data is loaded to enable the reload button and load the initial triple
   rows = res.data.rows;

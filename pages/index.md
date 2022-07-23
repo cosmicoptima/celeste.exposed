@@ -5,7 +5,6 @@
 \- [about](/about)\
 \- [twitter](https://twitter.com/parafactual)\
 \- [github](https://github.com/cosmicoptima)\
-\- [admonymous](https://admonymous.co/celeste)
 
 \- [alignment charts](/alignment)\
 \- [create a poll](/poll)\
@@ -30,6 +29,13 @@ settle a dispute:
 <div>
   <span class="evilbox" id="coinflip"><i>flip a coin...</i></span>
   <button id="flip-a-coin">⟳</button>
+</div>
+
+give me feedback:
+
+<div>
+  <div><textarea id="feedback-box" placeholder="i've loved you for 23 years" cols="40"></textarea></div>
+  <button id="submit-feedback">submit</button>
 </div>
 
 <span id="is-this-website-ugly">is this website ugly?</span>

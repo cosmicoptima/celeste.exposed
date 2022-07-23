@@ -90,6 +90,14 @@ struct Page {
 }
 
 fn render(title: &str, desc: &str, path: &str) -> Result<Template, Status> {
+    match notify::notify(
+        format!("page visited: {}", title).as_str(),
+        "page_with_curl",
+    ) {
+        Ok(_) => {}
+        Err(_) => return Err(Status::InternalServerError),
+    }
+
     let body = fs::read_to_string(path).map_err(|_| Status::InternalServerError)?;
     let options = ComrakOptions {
         extension: ComrakExtensionOptions {
@@ -135,25 +143,6 @@ fn ads_page() -> Result<Template, Status> {
 #[get("/alignment")]
 fn alignment_page() -> Result<Template, Status> {
     render("alignment", "...", "pages/alignment.md")
-}
-
-#[get("/copilot")]
-fn copilot_page() -> Result<Template, Status> {
-    render("copilot", "...", "pages/copilot.md")
-}
-
-#[get("/dictator")]
-fn dictator_page() -> Result<Template, Status> {
-    render("dictator", "...", "pages/dictator.md")
-}
-
-#[get("/happy")]
-fn happy_page() -> Result<Template, Status> {
-    render(
-        "unhappy?",
-        "a list of things to ask yourself if you are dissatisfied with life",
-        "pages/happy.md",
-    )
 }
 
 #[get("/poll")]
@@ -282,9 +271,6 @@ fn rocket() -> _ {
                 about_page,
                 ads_page,
                 alignment_page,
-                copilot_page,
-                dictator_page,
-                happy_page,
                 poll_page,
                 copilot_endpoint,
                 get_poll_endpoint,

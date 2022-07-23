@@ -81,16 +81,27 @@ function reloadFunFact() {
 function coinflip() {
   document.getElementById("coinflip").innerHTML = randomChoice(
     [
-      "heads!",
-      "tails!",
-      "it lands on its side",
-      "you lose the coin",
-      "the outcome you were hoping for",
-      "the outcome you were dreading",
-      "the coin never lands, instead bouncing with increasing intensity",
-      "i don't think you should know.",
-      "fuck off",
-      "<img src='https://izbicki.me/img/uploads/2011/11/coins-all.jpg'/>",
+        "heads!",
+        "tails!",
+        "it lands on its side",
+        "you lose the coin",
+        "you place the coin in a vending machine, scoring yourself a coke",
+        "the outcome you were hoping for",
+        "the outcome you were dreading",
+        "the coin never lands, instead bouncing with increasing intensity",
+        "the coin never lands, instead hovering ominously",
+        "the coin falls from the empire state building and pierces a woman's head, injuring her fatally",
+        "the coin is covered in grime, obscuring which side is which",
+        "the coin lands on a landmine, thereby curing your indecision",
+        "the coin flips you off",
+        "quicksand is not an ideal coin-flipping surface",
+        "a seagull snatches the coin in mid-air",
+        "a celeste snatches the coin in mid-air",
+        "natural 1...",
+        "natural 20!",
+        "yahtzee!",
+        "[REDACTED]",
+        "<img src='https://izbicki.me/img/uploads/2011/11/coins-all.jpg' />",
     ]
   );
 }
@@ -134,7 +145,7 @@ var allLinksVisible = false;
 function toggleLinks() {
   allLinksVisible = !allLinksVisible;
   document.getElementById("more-links").style.display = allLinksVisible ? "block" : "none";
-  document.getElementById("show-more-links").innerHTML = allLinksVisible ? "hide…" : "show more…";
+  document.getElementById("show-more-links").innerHTML = allLinksVisible ? "hide graveyard…" : "show graveyard…";
   document.getElementById("show-more-links-plus-minus").innerHTML = allLinksVisible ? "-" : "+";
 }
 document.getElementById("show-more-links").onclick = toggleLinks;

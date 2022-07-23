@@ -4,7 +4,7 @@
 
 \- [about](/about)\
 \- [twitter](https://twitter.com/parafactual)\
-\- [github](https://github.com/cosmicoptima)\
+\- [github](https://github.com/cosmicoptima)
 
 \- [alignment charts](/alignment)\
 \- [create a poll](/poll)\

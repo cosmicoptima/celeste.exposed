@@ -35,6 +35,11 @@ struct FontResponse(Vec<u8>);
 #[response(content_type = "image/x-icon")]
 struct IconResponse(Vec<u8>);
 
+#[get("/embed.css")]
+fn embed_css() -> CSSResponse {
+    CSSResponse(include_str!("../static/embed.css").to_string())
+}
+
 #[get("/style.css")]
 fn css() -> CSSResponse {
     CSSResponse(include_str!("../static/style.css").to_string())

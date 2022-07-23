@@ -2,6 +2,6 @@
 address = "0.0.0.0"
 port = 443
 
-[release.tls]
-certs = "/etc/letsencrypt/live/celeste.exposed/fullchain.pem"
-key = "/etc/letsencrypt/live/celeste.exposed/privkey.pem"
+# [release.tls]
+# certs = "/etc/letsencrypt/live/celeste.exposed/fullchain.pem"
+# key = "/etc/letsencrypt/live/celeste.exposed/privkey.pem"

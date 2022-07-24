@@ -10,11 +10,11 @@
 \- [create a poll](/poll)\
 \- [ads](/ads)
 
-<span id="show-more-links-plus-minus">+</span> <a id="show-more-links" href="javascript:void">show graveyard...</a>
-<span id="more-links" style="display: none;">
-  🪦 copilot\
-  🪦 date me\
-  🪦 ???
+<span id="show-more-links-plus-minus">+</span>
+<a id="show-more-links" href="javascript:void">show graveyard…</a>
+<span id="more-links" style="display: none;"> 🪦 copilot\
+🪦 date me\
+🪦 ???
 </span>
 
 did you know?

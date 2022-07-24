@@ -33,6 +33,10 @@ body {
     body {
         font-size: 0.8em;
     }
+
+    .banner {
+        font-size: 0.8em;
+    }
 }
 
 main {
@@ -135,7 +139,7 @@ textarea {
 
 @media screen and (max-width: 60rem) {
     .webring-embed {
-        width: 80vw;
+        width: calc(100vw - 1.25em);
     }
 }
 

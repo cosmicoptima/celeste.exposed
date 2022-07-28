@@ -10,7 +10,7 @@ comrak = "0.12.1"
 dotenv = "0.15"
 lazy_static = "1.4"
 nanoid = "0.4"
-nom = "7.1"
+# nom = "7.1"
 redis = { version = "0.21.5", features = ["tls"] }
 reqwest = "0.9"
 rocket_dyn_templates = { version = "0.1.0-rc.1", features = ["tera"] }

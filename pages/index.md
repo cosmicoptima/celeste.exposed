@@ -43,7 +43,7 @@ give me feedback:
       src='https://overengineering.kognise.dev/embed/celeste'
       width='100%'
       height='100'
-      style='background-color: rgba(255, 255, 255, 0.5); backdrop-filter: blur(5px); user-select: none;'
+      class='webring-embed-iframe'
       frameBorder='0'>
   </iframe>
 </div>

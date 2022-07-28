@@ -1,9 +1,9 @@
 use anyhow::{anyhow, Result};
 use bincode::{deserialize, serialize};
-use lazy_static::lazy_static;
 use nanoid::nanoid;
+use redis::Commands;
 use serde::{Deserialize, Serialize};
-use sled::Db;
+use std::env;
 
 #[derive(Deserialize, Serialize)]
 pub struct PollData {
@@ -35,71 +35,77 @@ pub struct PollVoteCheck {
     pub poll_id: String,
 }
 
-lazy_static! {
-    static ref DB: Db = sled::open("data").unwrap();
+pub struct PollDB {
+    conn: redis::Connection,
 }
 
-pub fn get_poll(poll_id: String) -> Result<Option<PollData>> {
-    Ok(if let Some(options_bin) = DB.get(poll_id)? {
-        Some(deserialize(&options_bin)?)
-    } else {
-        None
-    })
-}
-
-pub fn create_poll(options: Vec<String>) -> String {
-    let poll_id = nanoid!(6);
-
-    let mut votes = vec![];
-    for option in options {
-        votes.push(PollOption {
-            name: option,
-            votes: 0,
-        });
+impl PollDB {
+    pub fn new() -> Result<Self> {
+        Ok(PollDB {
+            conn: redis::Client::open(redis::ConnectionInfo {
+                addr: redis::ConnectionAddr::TcpTls {
+                    host: env::var("REDIS_HOST")?,
+                    port: env::var("REDIS_PORT")?.parse()?,
+                    insecure: false,
+                },
+                redis: redis::RedisConnectionInfo {
+                    username: Some(env::var("REDIS_USERNAME")?),
+                    password: Some(env::var("REDIS_PASSWORD")?),
+                    db: 0,
+                },
+            })?
+            .get_connection()?,
+        })
     }
 
-    DB.insert(poll_id.clone(), serialize(&PollData { votes }).unwrap())
-        .unwrap();
-    poll_id
-}
-
-pub fn vote_poll(poll_id: String, option: String, fingerprint: String) -> Result<()> {
-    if voted_on(fingerprint.clone(), poll_id.clone())? {
-        return Ok(());
+    pub fn get(&mut self, poll_id: &str) -> Result<Option<PollData>> {
+        Ok(
+            if let Some(data) = self.conn.get::<_, Option<String>>(poll_id)? {
+                Some(deserialize::<PollData>(data.as_bytes())?)
+            } else {
+                None
+            },
+        )
     }
 
-    if let Some(mut poll_data) = get_poll(poll_id.clone())? {
-        for vote in &mut poll_data.votes {
-            if vote.name == option {
-                vote.votes += 1;
-            }
+    pub fn create(&mut self, options: Vec<String>) -> Result<String> {
+        let poll_id = nanoid!(10);
+
+        let mut votes = vec![];
+        for option in options {
+            votes.push(PollOption {
+                name: option,
+                votes: 0,
+            });
         }
-        DB.insert(poll_id.clone(), serialize(&poll_data)?)?;
 
-        match DB.get(fingerprint.clone())? {
-            Some(data) => {
-                let mut poll_ids: Vec<String> = deserialize(&data)?;
-                if !poll_ids.contains(&poll_id) {
-                    poll_ids.push(poll_id);
-                    DB.insert(fingerprint, serialize(&poll_ids)?)?;
+        self.conn.set(&poll_id, serialize(&votes)?)?;
+        Ok(poll_id)
+    }
+
+    pub fn vote(&mut self, poll_id: &str, option: &str, fingerprint: &str) -> Result<()> {
+        if self.voted_on(poll_id, fingerprint)? {
+            return Ok(());
+        }
+        self.conn
+            .set(format!("{}:{}", poll_id, fingerprint), option)?;
+
+        if let Some(poll_data) = self.get(poll_id)? {
+            let mut votes = poll_data.votes;
+            for vote in &mut votes {
+                if vote.name == option {
+                    vote.votes += 1;
                 }
             }
-            None => {
-                DB.insert(fingerprint, serialize(&vec![poll_id])?)?;
-            }
+            self.conn.set(poll_id, serialize(&votes)?)?;
+        } else {
+            return Err(anyhow!("Poll not found"));
         }
 
         Ok(())
-    } else {
-        Err(anyhow!("Poll not found"))
     }
-}
 
-pub fn voted_on(fingerprint: String, poll_id: String) -> Result<bool> {
-    if DB.contains_key(fingerprint.clone())? {
-        let poll_ids: Vec<String> = deserialize(&DB.get(fingerprint)?.unwrap())?;
-        Ok(poll_ids.contains(&poll_id))
-    } else {
-        Ok(false)
+    pub fn voted_on(&mut self, poll_id: &str, fingerprint: &str) -> Result<bool> {
+        Ok(self.conn.exists(format!("{}:{}", poll_id, fingerprint))?)
     }
 }

@@ -1,12 +1,17 @@
+#![feature(never_type)]
+
 // mod copilot;
 mod notify;
 mod poll;
+
+use poll::PollDB;
 
 #[macro_use]
 extern crate rocket;
 use rocket::{
     fs::NamedFile,
     http::Status,
+    request::{FromRequest, Outcome, Request},
     response::status,
     serde::json::Json,
     shield::{Frame, Shield},
@@ -19,7 +24,7 @@ use serde::Serialize;
 use serde_json::{json, Value};
 use std::{
     fs,
-    net::SocketAddr,
+    net::IpAddr,
     path::{Path, PathBuf},
 };
 
@@ -127,8 +132,8 @@ fn feedback_endpoint(feedback: Json<Feedback>) {
 }
 
 #[get("/api/poll/get/<poll_id>")]
-fn get_poll_endpoint(poll_id: String) -> Result<Json<Value>, status::Custom<Json<Value>>> {
-    match poll::get_poll(poll_id) {
+fn get_poll_endpoint(poll_id: &str) -> Result<Json<Value>, status::Custom<Json<Value>>> {
+    match PollDB::new().unwrap().get(poll_id) {
         Ok(Some(poll)) => Ok(Json(json!({ "ok": true, "poll": poll }))),
         Ok(None) => Err(json_error(
             Status::NotFound,
@@ -143,7 +148,7 @@ fn get_poll_endpoint(poll_id: String) -> Result<Json<Value>, status::Custom<Json
 
 #[post("/api/poll/create", format = "json", data = "<options>")]
 fn new_poll_endpoint(options: Json<Vec<String>>) -> Json<Value> {
-    let poll_id = poll::create_poll(options.into_inner());
+    let poll_id = PollDB::new().unwrap().create(options.into_inner()).unwrap(); // :(
     notify::notify(
         format!("NEW POLL: https://celeste.exposed/poll/{}", poll_id).as_str(),
         "ballot_box",
@@ -162,7 +167,10 @@ fn vote_poll_endpoint(data: Json<poll::PollVote>) -> Json<Value> {
         option,
         fingerprint,
     } = data.into_inner();
-    match poll::vote_poll(poll_id, option, fingerprint) {
+    match PollDB::new()
+        .unwrap()
+        .vote(poll_id.as_str(), option.as_str(), fingerprint.as_str())
+    {
         Ok(()) => Json(json!({ "ok": true })),
         Err(e) => Json(json!({ "ok": false, "error": format!("{}", e) })),
     }
@@ -174,17 +182,26 @@ fn voted_poll_endpoint(data: Json<poll::PollVoteCheck>) -> Json<Value> {
         poll_id,
         fingerprint,
     } = data.into_inner();
-    match poll::voted_on(fingerprint, poll_id) {
+    match PollDB::new()
+        .unwrap()
+        .voted_on(fingerprint.as_str(), poll_id.as_str())
+    {
         Ok(voted) => Json(json!({ "ok": true, "voted": voted })),
         Err(e) => Json(json!({ "ok": false, "error": format!("{}", e) })),
     }
 }
 
 #[get("/poll/<poll_id>")]
-fn poll_page(poll_id: String) -> Result<Template, Status> {
-    let res = poll::get_poll(poll_id.clone());
+fn poll_page(poll_id: &str) -> Result<Template, Status> {
+    let res = poll::PollDB::new().unwrap().get(poll_id.clone());
     match res {
-        Ok(Some(data)) => Ok(Template::render("poll", poll::Poll { id: poll_id, data })),
+        Ok(Some(data)) => Ok(Template::render(
+            "poll",
+            poll::Poll {
+                id: poll_id.to_string(),
+                data,
+            },
+        )),
         Ok(None) => Err(Status::NotFound),
         Err(_) => Err(Status::InternalServerError),
     }
@@ -195,10 +212,30 @@ struct PageVisit {
     url: String,
 }
 
+struct ClientAddr {
+    addr: IpAddr,
+}
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for ClientAddr {
+    type Error = !;
+
+    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, !> {
+        match req.client_ip() {
+            Some(addr) => Outcome::Success(ClientAddr { addr }),
+            None => Outcome::Forward(()),
+        }
+    }
+}
+
 #[post("/api/visited", format = "json", data = "<data>")]
-fn visited_endpoint(data: Json<PageVisit>, address: SocketAddr) {
+fn visited_endpoint(data: Json<PageVisit>, address: ClientAddr) {
     let PageVisit { url } = data.into_inner();
-    notify::notify(format!("VISIT: {} from {}", url, address).as_str(), "eye").unwrap();
+    notify::notify(
+        format!("VISIT: {} from {}", url, address.addr).as_str(),
+        "eye",
+    )
+    .unwrap();
 }
 
 // main

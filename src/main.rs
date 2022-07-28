@@ -1,10 +1,11 @@
-mod copilot;
+// mod copilot;
 mod notify;
 mod poll;
 
 #[macro_use]
 extern crate rocket;
 use rocket::{
+    fs::NamedFile,
     http::Status,
     response::status,
     serde::json::Json,
@@ -13,97 +14,25 @@ use rocket::{
 use rocket_dyn_templates::Template;
 
 use comrak::{markdown_to_html, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions};
+use dotenv::dotenv;
 use serde::Serialize;
 use serde_json::{json, Value};
-use std::fs;
-
-// static
-
-#[derive(Responder)]
-#[response(content_type = "text/css")]
-struct CSSResponse(String);
-
-#[derive(Responder)]
-#[response(content_type = "text/javascript")]
-struct JSResponse(String);
-
-#[derive(Responder)]
-#[response(content_type = "font/woff2")]
-struct FontResponse(Vec<u8>);
-
-#[derive(Responder)]
-#[response(content_type = "image/x-icon")]
-struct IconResponse(Vec<u8>);
-
-#[get("/embed.css")]
-fn embed_css() -> CSSResponse {
-    CSSResponse(include_str!("../static/embed.css").to_string())
-}
-
-#[get("/style.css")]
-fn css() -> CSSResponse {
-    CSSResponse(include_str!("../static/style.css").to_string())
-}
-
-#[get("/index.js")]
-fn index_js() -> JSResponse {
-    JSResponse(include_str!("../static/index.js").to_string())
-}
-
-#[get("/alignment.js")]
-fn alignment_js() -> JSResponse {
-    JSResponse(include_str!("../static/alignment.js").to_string())
-}
-
-#[get("/copilot.js")]
-fn copilot_js() -> JSResponse {
-    JSResponse(include_str!("../static/copilot.js").to_string())
-}
-
-#[get("/LibreBaskerville-400.woff2")]
-fn libre_baskerville_400() -> FontResponse {
-    FontResponse(include_bytes!("../static/LibreBaskerville-400.woff2").to_vec())
-}
-
-#[get("/LibreBaskerville-700.woff2")]
-fn libre_baskerville_700() -> FontResponse {
-    FontResponse(include_bytes!("../static/LibreBaskerville-700.woff2").to_vec())
-}
-
-#[get("/SourceCodePro-400.woff2")]
-fn source_code_pro_400() -> FontResponse {
-    FontResponse(include_bytes!("../static/SourceCodePro-400.woff2").to_vec())
-}
-
-#[get("/SourceCodePro-700.woff2")]
-fn source_code_pro_700() -> FontResponse {
-    FontResponse(include_bytes!("../static/SourceCodePro-700.woff2").to_vec())
-}
-
-#[get("/favicon.ico")]
-fn favicon() -> IconResponse {
-    IconResponse(include_bytes!("../static/favicon.ico").to_vec())
-}
+use std::{
+    fs,
+    net::SocketAddr,
+    path::{Path, PathBuf},
+};
 
 // pages
 
 #[derive(Serialize)]
 struct Page {
     title: String,
-    desc: String,
     body: String,
 }
 
-fn render(title: &str, desc: &str, path: &str) -> Result<Template, Status> {
-    match notify::notify(
-        format!("page visited: {}", title).as_str(),
-        "page_with_curl",
-    ) {
-        Ok(_) => {}
-        Err(_) => return Err(Status::InternalServerError),
-    }
-
-    let body = fs::read_to_string(path).map_err(|_| Status::InternalServerError)?;
+fn render(title: &str, path: &str) -> Result<Template, Status> {
+    let body = fs::read_to_string(path).map_err(|_| Status::NotFound)?;
     let options = ComrakOptions {
         extension: ComrakExtensionOptions {
             footnotes: true,
@@ -119,44 +48,33 @@ fn render(title: &str, desc: &str, path: &str) -> Result<Template, Status> {
         "page",
         &Page {
             title: title.to_string(),
-            desc: desc.to_string(),
             body: markdown_to_html(&body, &options).to_string(),
         },
     ))
 }
 
 #[catch(404)]
-fn on_404() -> Result<Template, Status> {
-    render("404", "nonsense useless page", "pages/404.md")
+async fn on_404() -> Result<Template, Status> {
+    render("404", "pages/404.md")
 }
 
 #[get("/")]
-fn index_page() -> Result<Template, Status> {
-    render("index", "celeste homepage", "pages/index.md")
+async fn index_page() -> Result<Template, Status> {
+    render("index", "pages/index.md")
 }
 
-#[get("/about")]
-fn about_page() -> Result<Template, Status> {
-    render("about", "...", "pages/about.md")
-}
-
-#[get("/ads")]
-fn ads_page() -> Result<Template, Status> {
-    render("ads", "...", "pages/ads.md")
-}
-
-#[get("/alignment")]
-fn alignment_page() -> Result<Template, Status> {
-    render("alignment", "...", "pages/alignment.md")
-}
-
-#[get("/poll")]
-fn poll_page() -> Result<Template, Status> {
-    render(
-        "poll",
-        "create a twitter poll with more than four options",
-        "pages/poll.md",
-    )
+#[get("/<file>")]
+async fn other_file(file: String) -> Result<NamedFile, Result<Template, Status>> {
+    match NamedFile::open(Path::new("static/").join(PathBuf::from(&file)))
+        .await
+        .ok()
+    {
+        Some(file) => Ok(file),
+        None => Err(render(
+            file.clone().as_str(),
+            format!("pages/{}.md", file).as_str(),
+        )),
+    }
 }
 
 // api
@@ -165,33 +83,33 @@ fn json_error(status: Status, message: String) -> status::Custom<Json<Value>> {
     status::Custom(status, Json(json!({ "error": message })))
 }
 
-#[post("/api/copilot", format = "json", data = "<data>")]
-fn copilot_endpoint(
-    data: Json<copilot::Request>,
-) -> Result<Json<Value>, status::Custom<Json<Value>>> {
-    let copilot::Request {
-        prompt,
-        max_tokens,
-        temperature,
-        top_p,
-    } = data.into_inner();
-    let temperature = temperature.unwrap_or(1.0);
-    let top_p = top_p.unwrap_or(0.9);
-
-    match notify::notify(
-        format!("copilot request with prompt: {}", prompt.clone()).as_str(),
-        "airplane",
-    ) {
-        Ok(_) => (),
-        Err(e) => return Err(json_error(Status::InternalServerError, e.to_string())),
-    }
-
-    let output = copilot::get_copilot(prompt, max_tokens, temperature, top_p);
-    match output {
-        Ok(output) => Ok(Json(json!({ "ok": true, "output": output }))),
-        Err(_) => Err(json_error(Status::BadRequest, "...".to_string())),
-    }
-}
+// #[post("/api/copilot", format = "json", data = "<data>")]
+// fn copilot_endpoint(
+//     data: Json<copilot::Request>,
+// ) -> Result<Json<Value>, status::Custom<Json<Value>>> {
+//     let copilot::Request {
+//         prompt,
+//         max_tokens,
+//         temperature,
+//         top_p,
+//     } = data.into_inner();
+//     let temperature = temperature.unwrap_or(1.0);
+//     let top_p = top_p.unwrap_or(0.9);
+//
+//     match notify::notify(
+//         format!("copilot request with prompt: {}", prompt.clone()).as_str(),
+//         "airplane",
+//     ) {
+//         Ok(_) => (),
+//         Err(e) => return Err(json_error(Status::InternalServerError, e.to_string())),
+//     }
+//
+//     let output = copilot::get_copilot(prompt, max_tokens, temperature, top_p);
+//     match output {
+//         Ok(output) => Ok(Json(json!({ "ok": true, "output": output }))),
+//         Err(_) => Err(json_error(Status::BadRequest, "...".to_string())),
+//     }
+// }
 
 #[derive(serde::Deserialize)]
 struct Feedback {
@@ -201,15 +119,25 @@ struct Feedback {
 #[post("/api/feedback", format = "json", data = "<feedback>")]
 fn feedback_endpoint(feedback: Json<Feedback>) {
     let Feedback { feedback } = feedback.into_inner();
-    notify::notify(format!("feedback: {}", feedback).as_str(), "exclamation").unwrap()
+    notify::notify(
+        format!("NEW FEEDBACK: {}", feedback).as_str(),
+        "love_letter",
+    )
+    .unwrap()
 }
 
 #[get("/api/poll/get/<poll_id>")]
 fn get_poll_endpoint(poll_id: String) -> Result<Json<Value>, status::Custom<Json<Value>>> {
     match poll::get_poll(poll_id) {
         Ok(Some(poll)) => Ok(Json(json!({ "ok": true, "poll": poll }))),
-        Ok(None) => Err(json_error(Status::NotFound, "...".to_string())), // TODO placeholder
-        Err(_) => Err(json_error(Status::InternalServerError, "...".to_string())), // TODO placeholder
+        Ok(None) => Err(json_error(
+            Status::NotFound,
+            "this poll doesn't exist".to_string(),
+        )),
+        Err(_) => Err(json_error(
+            Status::InternalServerError,
+            "unknown error".to_string(),
+        )),
     }
 }
 
@@ -217,11 +145,7 @@ fn get_poll_endpoint(poll_id: String) -> Result<Json<Value>, status::Custom<Json
 fn new_poll_endpoint(options: Json<Vec<String>>) -> Json<Value> {
     let poll_id = poll::create_poll(options.into_inner());
     notify::notify(
-        format!(
-            "new poll with url: https://celeste.exposed/poll/{}",
-            poll_id
-        )
-        .as_str(),
+        format!("NEW POLL: https://celeste.exposed/poll/{}", poll_id).as_str(),
         "ballot_box",
     )
     .unwrap();
@@ -257,7 +181,7 @@ fn voted_poll_endpoint(data: Json<poll::PollVoteCheck>) -> Json<Value> {
 }
 
 #[get("/poll/<poll_id>")]
-fn poll_page_with_id(poll_id: String) -> Result<Template, Status> {
+fn poll_page(poll_id: String) -> Result<Template, Status> {
     let res = poll::get_poll(poll_id.clone());
     match res {
         Ok(Some(data)) => Ok(Template::render("poll", poll::Poll { id: poll_id, data })),
@@ -266,36 +190,36 @@ fn poll_page_with_id(poll_id: String) -> Result<Template, Status> {
     }
 }
 
+#[derive(serde::Deserialize)]
+struct PageVisit {
+    url: String,
+}
+
+#[post("/api/visited", format = "json", data = "<data>")]
+fn visited_endpoint(data: Json<PageVisit>, address: SocketAddr) {
+    let PageVisit { url } = data.into_inner();
+    notify::notify(format!("VISIT: {} from {}", url, address).as_str(), "eye").unwrap();
+}
+
 // main
 
 #[launch]
 fn rocket() -> _ {
+    dotenv().ok();
     rocket::build()
         .mount(
             "/",
             routes![
-                embed_css,
-                css,
-                index_js,
-                alignment_js,
-                copilot_js,
-                libre_baskerville_400,
-                libre_baskerville_700,
-                source_code_pro_400,
-                source_code_pro_700,
-                favicon,
                 index_page,
-                about_page,
-                ads_page,
-                alignment_page,
-                poll_page,
-                copilot_endpoint,
+                other_file,
+                // copilot_endpoint,
                 feedback_endpoint,
                 get_poll_endpoint,
                 new_poll_endpoint,
                 vote_poll_endpoint,
                 voted_poll_endpoint,
-                poll_page_with_id,
+                poll_page,
+                visited_endpoint,
             ],
         )
         .register("/", catchers![on_404])

@@ -1,61 +1,54 @@
-var axios = require("axios");
-var dedent = require("dedent");
-var getEmoji = require("get-random-emoji");
-var scriptjs = require("scriptjs");
-var wikidata = require("wikidata-sdk");
-var rows = {};
+const axios = require("axios");
+const dedent = require("dedent");
+const getEmoji = require("get-random-emoji");
+const scriptjs = require("scriptjs");
+const wikidata = require("wikidata-sdk");
 
-function randomChoice(list) {
-  return list[Math.floor(Math.random() * list.length)];
-}
+let rows = {};
 
-function randomProperty(f) {
-  f(randomChoice(rows));
-}
+const randomChoice = list => list[Math.floor(Math.random() * list.length)]
 
-function randomTriple(f) {
-  randomProperty((property) => {
-    let [propertyID, propertyName] = property;
-    // ID properties aren't very fun; we will forbid them
-    // this is not completely accurate and never will be
-    let pnLower = propertyName.toLowerCase();
-    if (
-      pnLower.includes("code") ||
-      pnLower.includes("id") ||
-      pnLower.includes("identifier") ||
-      pnLower.includes("slug")
-    ) {
-      randomTriple(f);
-      return;
-    }
+const randomProperty = f => f(randomChoice(rows))
 
-    let query = `SELECT ?aLabel ?bLabel
-                 WHERE {
-                   ?a wdt:${propertyID} ?b.
-                   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-                 }
-                 LIMIT 100`;
+const randomTriple = f => {
+  randomProperty(([propertyID, propertyName]) => {
+    // id properties aren't very fun; we will (try to) forbid them
+    for (let word of ["code", "id", "identifier", "slug"])
+      if (propertyName.toLowerCase().includes(word)) {
+        randomTriple(f)
+        return
+      }
+
+    const query = `
+      SELECT ?aLabel ?bLabel
+      WHERE {
+        ?a wdt:${propertyID} ?b.
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+      }
+      LIMIT 100`
+
     axios.get(wikidata.sparqlQuery(query)).then((res) => {
-      let choices = res.data.results.bindings;
+      const choices = res.data.results.bindings
+
       if (choices.length > 0) {
-        let choice = randomChoice(res.data.results.bindings);
-        let [a, b] = [choice.aLabel.value, choice.bLabel.value];
+        const choice = randomChoice(choices)
+        const [a, b] = [choice.aLabel.value, choice.bLabel.value];
 
         // unnamed objects aren't very fun either
         // (such objects have labels like Q123456789)
         if (!isNaN(parseInt(a.slice(1)))) {
-          randomTriple(f);
-          return;
+          randomTriple(f)
+          return
         }
 
-        if (b.startsWith("http://") || b.startsWith("https://")) {
-          b = "<a href='" + b + "'>[link]</a>";
-        }
+        if (b.startsWith("http://") || b.startsWith("https://"))
+          b = "<a href='" + b + "'>[link]</a>"
 
-        f(a, propertyName, b);
-      } else randomTriple(f);
-    });
-  });
+        f(a, propertyName, b)
+      }
+      else randomTriple(f)
+    })
+  })
 }
 
 function setFunFact(a, p, b) {
@@ -81,27 +74,27 @@ function reloadFunFact() {
 function coinflip() {
   document.getElementById("coinflip").innerHTML = randomChoice(
     [
-        "heads!",
-        "tails!",
-        "it lands on its side",
-        "you lose the coin",
-        "you place the coin in a vending machine, scoring yourself a coke",
-        "the outcome you were hoping for",
-        "the outcome you were dreading",
-        "the coin never lands, instead bouncing with increasing intensity",
-        "the coin never lands, instead hovering ominously",
-        "the coin falls from the empire state building and pierces a woman's head, injuring her fatally",
-        "the coin is covered in grime, obscuring which side is which",
-        "the coin lands on a landmine, thereby curing your indecision",
-        "the coin flips you off",
-        "quicksand is not an ideal coin-flipping surface",
-        "a seagull snatches the coin in mid-air",
-        "a celeste snatches the coin in mid-air",
-        "natural 1...",
-        "natural 20!",
-        "yahtzee!",
-        "[REDACTED]",
-        "<img src='https://izbicki.me/img/uploads/2011/11/coins-all.jpg' />",
+      "heads!",
+      "tails!",
+      "it lands on its side",
+      "you lose the coin",
+      "you place the coin in a vending machine, scoring yourself a coke",
+      "the outcome you were hoping for",
+      "the outcome you were dreading",
+      "the coin never lands, instead bouncing with increasing intensity",
+      "the coin never lands, instead hovering ominously",
+      "the coin falls from the empire state building and pierces a woman's head, injuring her fatally",
+      "the coin is covered in grime, obscuring which side is which",
+      "the coin lands on a landmine, thereby curing your indecision",
+      "the coin flips you off",
+      "quicksand is not an ideal coin-flipping surface",
+      "a seagull snatches the coin in mid-air",
+      "a celeste snatches the coin in mid-air",
+      "natural 1...",
+      "natural 20!",
+      "yahtzee!",
+      "[REDACTED]",
+      "<img src='https://izbicki.me/img/uploads/2011/11/coins-all.jpg' />",
     ]
   );
 }
@@ -150,91 +143,96 @@ function toggleLinks() {
 }
 document.getElementById("show-more-links").onclick = toggleLinks;
 
-function randomizeCSS() {
-  document.getElementById("is-this-website-ugly").innerHTML = "(randomizing…)";
+// function randomizeCSS() {
+//   document.getElementById("is-this-website-ugly").innerHTML = "(randomizing…)";
+// 
+//   var randomComment = randomChoice(
+//     ["/* hmm, maybe this will work? */\n",
+//       "/* colors!!! */\n",
+//       "/* now it's time to get serious */\n",
+//       "/* now it's time to get serious */\n",
+//     ]
+//   )
+//   var randomElement = randomChoice([
+//     "* {",
+//     "html {",
+//     "body {",
+//     "div {",
+//     "h1 {",
+//     "p {",
+//     "a {",
+//     "button {",
+//   ])
+//   var promptEnding = randomComment + randomElement;
+//   var cssPrompt = dedent`
+//   body {
+//     font-family: "Libre Baskerville";
+//     line-height: 1.6em;
+// 
+//     max-width: 60rem;
+//     margin: 2em auto;
+//     padding: 0 1em;
+//   }
+// 
+//   @media screen and (max-width: 600px) {
+//     body { font-size: 0.8em; }
+//   }
+// 
+//   a { text-decoration: none; }
+// 
+//   /* usually sup affects line height */
+//   sup {
+//     vertical-align: top;
+//     position: relative;
+//     top: -0.5em;
+//   }
+// 
+//   textarea {
+//     font-family: "Source Code Pro";
+//     padding: 0.5em;
+//   }
+// 
+//   /* now let's make it ugly */
+//   ` + promptEnding;
+//   axios.post("/api/copilot", {
+//     prompt: cssPrompt,
+//     max_tokens: 200,
+//     temperature: 1.7,
+//   }).then((res) => {
+//     document.getElementById("random-css").innerHTML = promptEnding + res.data.output;
+//     document.getElementById("is-this-website-ugly").innerHTML = "is this website ugly?";
+//   });
+// }
+// document.getElementById("randomize-css").onclick = randomizeCSS;
 
-  var randomComment = randomChoice(
-    ["/* hmm, maybe this will work? */\n",
-      "/* colors!!! */\n",
-      "/* now it's time to get serious */\n",
-      "/* now it's time to get serious */\n",
-    ]
-  )
-  var randomElement = randomChoice([
-    "* {",
-    "html {",
-    "body {",
-    "div {",
-    "h1 {",
-    "p {",
-    "a {",
-    "button {",
-  ])
-  var promptEnding = randomComment + randomElement;
-  var cssPrompt = dedent`
-  body {
-    font-family: "Libre Baskerville";
-    line-height: 1.6em;
-
-    max-width: 60rem;
-    margin: 2em auto;
-    padding: 0 1em;
-  }
-
-  @media screen and (max-width: 600px) {
-    body { font-size: 0.8em; }
-  }
-
-  a { text-decoration: none; }
-
-  /* usually sup affects line height */
-  sup {
-    vertical-align: top;
-    position: relative;
-    top: -0.5em;
-  }
-
-  textarea {
-    font-family: "Source Code Pro";
-    padding: 0.5em;
-  }
-
-  /* now let's make it ugly */
-  ` + promptEnding;
-  axios.post("/api/copilot", {
-    prompt: cssPrompt,
-    max_tokens: 200,
-    temperature: 1.7,
-  }).then((res) => {
-    document.getElementById("random-css").innerHTML = promptEnding + res.data.output;
-    document.getElementById("is-this-website-ugly").innerHTML = "is this website ugly?";
-  });
-}
-document.getElementById("randomize-css").onclick = randomizeCSS;
-
-document.getElementById("flip-a-coin").onclick = coinflip;
+document.getElementById("flip-a-coin").onclick = coinflip
 
 document.getElementById("dont-go-home").onclick = () => {
-  document.getElementById("dont-go-home-text").innerHTML = "you're already here, idiot";
-  document.getElementById("dont-go-home-text").style.opacity = 1.0;
-  setTimeout(() => {
-    let opacity = 1.0;
-    let interval = setInterval(() => {
-      opacity -= 0.01;
-      if (opacity < 0) {
-        clearInterval(interval);
-        opacity = 0;
-      }
-      document.getElementById("dont-go-home-text").style.opacity = opacity;
-    }
-      , 7);
-  }, 1250);
-};
+  document.getElementById("dont-go-home-text").innerHTML = "you're already here, idiot"
+  document.getElementById("dont-go-home-text").style.opacity = 1.0
+  setTimeout(
+    () => {
+      let opacity = 1.0
+      let interval = setInterval(
+        () => {
+          opacity -= 0.01
+          if (opacity < 0) {
+            clearInterval(interval)
+            opacity = 0
+          }
+          document.getElementById("dont-go-home-text").style.opacity = opacity
+        },
+        7,
+      )
+    },
+    1250,
+  )
+}
 
 document.getElementById("submit-feedback").onclick = () => {
-  const feedback = document.getElementById("feedback-box").value;
-  axios.post("/api/feedback", { feedback });
-  document.getElementById("feedback-box").value = "";
+  const feedback = document.getElementById("feedback-box").value
+  axios.post("/api/feedback", { feedback })
+  document.getElementById("feedback-box").value = ""
 }
 
 axios.get("https://quarry.wmcloud.org/run/45013/output/1/json").then((res) => {

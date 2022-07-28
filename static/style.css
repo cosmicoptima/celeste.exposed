@@ -29,21 +29,6 @@ body {
     line-height: 1.6em;
 }
 
-@media screen and (max-width: 600px) {
-    body {
-        font-size: 0.8em;
-    }
-
-    .banner {
-        font-size: 0.8em;
-    }
-}
-
-main {
-    max-width: 60rem;
-    margin: 2em auto;
-}
-
 #banners {
     position: fixed;
     top: 0;
@@ -70,6 +55,21 @@ main {
 
 .banner a:visited {
     color: #88f;
+}
+
+@media screen and (max-width: 600px) {
+    body {
+        font-size: 0.8em;
+    }
+
+    .banner {
+        font-size: 0.8em;
+    }
+}
+
+main {
+    max-width: 60rem;
+    margin: 2em auto;
 }
 
 .go-home {
@@ -112,23 +112,25 @@ textarea {
     padding: 0.5em;
 }
 
+.advertisement {
+    margin-bottom: 1em;
+}
+
+.collapsed {
+    display: none;
+}
+
 .evilbox {
     background-color: #eee;
     padding: 0.5em;
 }
 
-.advertisement {
-    margin-bottom: 1em;
+.footnotes {
+    font-size: 0.9em;
 }
 
-.code {
-    font-family: "Source Code Pro";
-    background-color: #eee;
-    padding: 0.1em 1em;
-}
-
-.collapsed {
-    display: none;
+.poll-row {
+    margin-bottom: 0.25em;
 }
 
 .webring-embed {
@@ -138,15 +140,11 @@ textarea {
 }
 
 @media screen and (max-width: 60rem) {
-    .webring-embed {
-        width: calc(100vw - 1.25em);
+    main {
+        padding: 0 0.5em;
     }
-}
-
-.poll-row {
-    margin-bottom: 0.25em;
-}
-
-.footnotes {
-    font-size: 0.9em;
+    
+    .webring-embed {
+        width: calc(100vw - 2em);
+    }
 }

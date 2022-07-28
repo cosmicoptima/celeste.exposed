@@ -38,11 +38,6 @@ give me feedback:
   <button id="submit-feedback">submit</button>
 </div>
 
-<span id="is-this-website-ugly">is this website ugly?</span>
-<button id="randomize-css">randomize css (CURRENTLY BROKEN)</button>
-
-<style id="random-css"></style>
-
 <div class="webring-embed">
   <iframe
       src='https://overengineering.kognise.dev/embed/celeste'

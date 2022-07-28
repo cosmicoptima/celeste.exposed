@@ -1,3 +1,5 @@
+// TODO fix and re-enable copilot features
+
 use nom::{
     bytes::complete::{is_not, tag},
     combinator::fail,

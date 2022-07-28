@@ -7,4 +7,3 @@ watch: js
 js:
 	browserify scripts/index.js -o static/index.js
 	browserify scripts/alignment.js -o static/alignment.js
-	browserify scripts/copilot.js -o static/copilot.js

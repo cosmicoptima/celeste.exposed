@@ -23,6 +23,8 @@ use dotenv::dotenv;
 use serde::Serialize;
 use serde_json::{json, Value};
 use std::{
+    fmt,
+    fmt::{Display, Formatter},
     fs,
     path::{Path, PathBuf},
 };
@@ -211,11 +213,27 @@ struct PageVisit {
     url: String,
 }
 
+#[derive(serde::Deserialize)]
+struct IPLocation {
+    city: String,
+    country: String,
+}
+
+impl Display for IPLocation {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{}, {}", self.city, self.country)
+    }
+}
+
 #[post("/api/visited", format = "json", data = "<data>")]
 fn visited_endpoint(data: Json<PageVisit>, address: ClientAddr) {
     let PageVisit { url } = data.into_inner();
+
+    let mut req = reqwest::get(&format!("http://ip-api.com/json/{}", address.ip)).unwrap();
+    let location = format!("{}", req.json::<IPLocation>().unwrap());
+    
     notify::notify(
-        format!("VISIT: {} from {}", url, address.ip).as_str(),
+        format!("VISIT: {} from {}", url, location).as_str(),
         "eye",
     )
     .unwrap();

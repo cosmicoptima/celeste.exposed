@@ -11,11 +11,11 @@ extern crate rocket;
 use rocket::{
     fs::NamedFile,
     http::Status,
-    request::{FromRequest, Outcome, Request},
     response::status,
     serde::json::Json,
     shield::{Frame, Shield},
 };
+use rocket_client_addr::ClientAddr;
 use rocket_dyn_templates::Template;
 
 use comrak::{markdown_to_html, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions};
@@ -24,7 +24,6 @@ use serde::Serialize;
 use serde_json::{json, Value};
 use std::{
     fs,
-    net::IpAddr,
     path::{Path, PathBuf},
 };
 
@@ -212,27 +211,11 @@ struct PageVisit {
     url: String,
 }
 
-struct ClientAddr {
-    addr: IpAddr,
-}
-
-#[rocket::async_trait]
-impl<'r> FromRequest<'r> for ClientAddr {
-    type Error = !;
-
-    async fn from_request(req: &'r Request<'_>) -> Outcome<Self, !> {
-        match req.client_ip() {
-            Some(addr) => Outcome::Success(ClientAddr { addr }),
-            None => Outcome::Forward(()),
-        }
-    }
-}
-
 #[post("/api/visited", format = "json", data = "<data>")]
 fn visited_endpoint(data: Json<PageVisit>, address: ClientAddr) {
     let PageVisit { url } = data.into_inner();
     notify::notify(
-        format!("VISIT: {} from {}", url, address.addr).as_str(),
+        format!("VISIT: {} from {}", url, address.ip).as_str(),
         "eye",
     )
     .unwrap();

@@ -1,9 +1,11 @@
 #![feature(never_type)]
 
 // mod copilot;
+mod ban;
 mod notify;
 mod poll;
 
+use ban::BanDB;
 use poll::PollDB;
 
 #[macro_use]
@@ -14,6 +16,7 @@ use rocket::{
     response::status,
     serde::json::Json,
     shield::{Frame, Shield},
+    Request,
 };
 use rocket_client_addr::ClientAddr;
 use rocket_dyn_templates::Template;
@@ -26,6 +29,7 @@ use std::{
     fmt,
     fmt::{Display, Formatter},
     fs,
+    net::IpAddr,
     path::{Path, PathBuf},
 };
 
@@ -37,7 +41,12 @@ struct Page {
     body: String,
 }
 
-fn render(title: &str, path: &str) -> Result<Template, Status> {
+fn render(title: &str, path: &str, address: IpAddr) -> Result<Template, Status> {
+    let mut ban_db = BanDB::new().unwrap();
+    if ban_db.is_banned(address).unwrap() {
+        return Err(Status::Forbidden);
+    }
+    
     let body = fs::read_to_string(path).map_err(|_| Status::NotFound)?;
     let options = ComrakOptions {
         extension: ComrakExtensionOptions {
@@ -59,18 +68,23 @@ fn render(title: &str, path: &str) -> Result<Template, Status> {
     ))
 }
 
+#[catch(403)]
+fn on_403() -> status::Custom<()> {
+    status::Custom(Status::Forbidden, ())
+}
+
 #[catch(404)]
-async fn on_404() -> Result<Template, Status> {
-    render("404", "pages/404.md")
+async fn on_404(request: &Request<'_>) -> Result<Template, Status> {
+    render("404", "pages/404.md", request.client_ip().unwrap())
 }
 
 #[get("/")]
-async fn index_page() -> Result<Template, Status> {
-    render("index", "pages/index.md")
+async fn index_page(address: ClientAddr) -> Result<Template, Status> {
+    render("index", "pages/index.md", address.ip)
 }
 
 #[get("/<file>")]
-async fn other_file(file: String) -> Result<NamedFile, Result<Template, Status>> {
+async fn other_file(file: String, address: ClientAddr) -> Result<NamedFile, Result<Template, Status>> {
     match NamedFile::open(Path::new("static/").join(PathBuf::from(&file)))
         .await
         .ok()
@@ -79,6 +93,7 @@ async fn other_file(file: String) -> Result<NamedFile, Result<Template, Status>>
         None => Err(render(
             file.clone().as_str(),
             format!("pages/{}.md", file).as_str(),
+            address.ip,
         )),
     }
 }
@@ -116,6 +131,24 @@ fn json_error(status: Status, message: String) -> status::Custom<Json<Value>> {
 //         Err(_) => Err(json_error(Status::BadRequest, "...".to_string())),
 //     }
 // }
+
+#[get("/api/ban")]
+fn ban_endpoint(address: ClientAddr) -> status::Custom<()> {
+    let mut ban_db = BanDB::new().unwrap();
+    ban_db.ban(address.ip).unwrap();
+
+    let _ = notify::notify(format!("BANNED: {}", address.ip).as_str(), "no_entry");
+    status::Custom(Status::Forbidden, ())
+}
+
+#[get("/api/unban")]
+fn unban_endpoint(address: ClientAddr) -> status::Custom<()> {
+    let mut ban_db = BanDB::new().unwrap();
+    ban_db.unban(address.ip).unwrap();
+
+    let _ = notify::notify(format!("UNBANNED: {}", address.ip).as_str(), "white_check_mark");
+    status::Custom(Status::Ok, ())
+}
 
 #[derive(serde::Deserialize)]
 struct Feedback {
@@ -250,6 +283,8 @@ fn rocket() -> _ {
             routes![
                 index_page,
                 other_file,
+                ban_endpoint,
+                unban_endpoint,
                 // copilot_endpoint,
                 feedback_endpoint,
                 get_poll_endpoint,
@@ -260,7 +295,7 @@ fn rocket() -> _ {
                 visited_endpoint,
             ],
         )
-        .register("/", catchers![on_404])
+        .register("/", catchers![on_403, on_404])
         .attach(Template::fairing())
         .attach(Shield::default().disable::<Frame>())
 }

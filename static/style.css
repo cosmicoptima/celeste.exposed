@@ -112,6 +112,23 @@ textarea {
     margin-bottom: 1em;
 }
 
+.ban-my-ip {
+    background-color: #c44;
+    border-radius: 0.5em;
+    color: #fff;
+    display: inline-block;
+    font-family: "Libre Baskerville";
+    padding: 0.4em 0.7em;
+}
+
+.ban-my-ip:hover {
+    background-color: #800;
+}
+
+.ban-my-ip:visited {
+    color: #fff;
+}
+
 .collapsed {
     display: none;
 }

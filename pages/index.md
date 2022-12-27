@@ -18,6 +18,8 @@
 🪦 ???
 </span>
 
+<a class="ban-my-ip" href="/api/ban">BAN MY IP from celeste.exposed</a>
+
 did you know?
 
 <div>

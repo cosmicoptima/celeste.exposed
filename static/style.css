@@ -66,6 +66,7 @@ body {
 main {
     max-width: 60rem;
     margin: 2em auto;
+    padding-bottom: 20vh;
 }
 
 .go-home {
@@ -161,9 +162,9 @@ textarea {
 
 @media screen and (max-width: 60rem) {
     main {
-        padding: 0 0.5em;
+        padding: 0 0.5em 20vh 0.5em;
     }
-    
+
     .webring-embed {
         width: calc(100vw - 2em);
     }

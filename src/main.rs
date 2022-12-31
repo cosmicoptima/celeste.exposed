@@ -5,18 +5,18 @@ mod ban;
 mod notify;
 mod poll;
 
-use ban::BanDB;
-use poll::PollDB;
+// use ban::BanDB;
+// use poll::PollDB;
 
 #[macro_use]
 extern crate rocket;
 use rocket::{
     fs::NamedFile,
-    http::Status,
+    http::{Status, Cookie, CookieJar},
     response::status,
     serde::json::Json,
     shield::{Frame, Shield},
-    Request,
+    Request
 };
 use rocket_client_addr::ClientAddr;
 use rocket_dyn_templates::Template;
@@ -42,10 +42,10 @@ struct Page {
 }
 
 fn render(title: &str, path: &str, address: IpAddr) -> Result<Template, Status> {
-    let mut ban_db = BanDB::new().unwrap();
-    if ban_db.is_banned(address).unwrap() {
-        return Err(Status::Forbidden);
-    }
+    // let mut ban_db = BanDB::new().unwrap();
+    // if ban_db.is_banned(address).unwrap() {
+    //     return Err(Status::Forbidden);
+    // }
     
     let body = fs::read_to_string(path).map_err(|_| Status::NotFound)?;
     let options = ComrakOptions {
@@ -134,8 +134,8 @@ fn json_error(status: Status, message: String) -> status::Custom<Json<Value>> {
 
 #[get("/api/ban")]
 fn ban_endpoint(address: ClientAddr) -> status::Custom<()> {
-    let mut ban_db = BanDB::new().unwrap();
-    ban_db.ban(address.ip).unwrap();
+    // let mut ban_db = BanDB::new().unwrap();
+    // ban_db.ban(address.ip).unwrap();
 
     let _ = notify::notify(format!("BANNED: {}", address.ip).as_str(), "no_entry");
     status::Custom(Status::Forbidden, ())
@@ -143,8 +143,8 @@ fn ban_endpoint(address: ClientAddr) -> status::Custom<()> {
 
 #[get("/api/unban")]
 fn unban_endpoint(address: ClientAddr) -> status::Custom<()> {
-    let mut ban_db = BanDB::new().unwrap();
-    ban_db.unban(address.ip).unwrap();
+    // let mut ban_db = BanDB::new().unwrap();
+    // ban_db.unban(address.ip).unwrap();
 
     let _ = notify::notify(format!("UNBANNED: {}", address.ip).as_str(), "white_check_mark");
     status::Custom(Status::Ok, ())
@@ -165,81 +165,81 @@ fn feedback_endpoint(feedback: Json<Feedback>) {
     .unwrap()
 }
 
-#[get("/api/poll/get/<poll_id>")]
-fn get_poll_endpoint(poll_id: &str) -> Result<Json<Value>, status::Custom<Json<Value>>> {
-    match PollDB::new().unwrap().get(poll_id) {
-        Ok(Some(poll)) => Ok(Json(json!({ "ok": true, "poll": poll }))),
-        Ok(None) => Err(json_error(
-            Status::NotFound,
-            "this poll doesn't exist".to_string(),
-        )),
-        Err(_) => Err(json_error(
-            Status::InternalServerError,
-            "unknown error".to_string(),
-        )),
-    }
-}
+// #[get("/api/poll/get/<poll_id>")]
+// fn get_poll_endpoint(poll_id: &str) -> Result<Json<Value>, status::Custom<Json<Value>>> {
+//     match PollDB::new().unwrap().get(poll_id) {
+//         Ok(Some(poll)) => Ok(Json(json!({ "ok": true, "poll": poll }))),
+//         Ok(None) => Err(json_error(
+//             Status::NotFound,
+//             "this poll doesn't exist".to_string(),
+//         )),
+//         Err(_) => Err(json_error(
+//             Status::InternalServerError,
+//             "unknown error".to_string(),
+//         )),
+//     }
+// }
 
-#[post("/api/poll/create", format = "json", data = "<options>")]
-fn new_poll_endpoint(options: Json<Vec<String>>) -> Json<Value> {
-    let poll_id = PollDB::new().unwrap().create(options.into_inner()).unwrap(); // :(
-    notify::notify(
-        format!("NEW POLL: https://celeste.exposed/poll/{}", poll_id).as_str(),
-        "ballot_box",
-    )
-    .unwrap();
-    Json(json!({
-        "ok": true,
-        "url": format!("https://celeste.exposed/poll/{}", poll_id)
-    }))
-}
+// #[post("/api/poll/create", format = "json", data = "<options>")]
+// fn new_poll_endpoint(options: Json<Vec<String>>) -> Json<Value> {
+//     let poll_id = PollDB::new().unwrap().create(options.into_inner()).unwrap(); // :(
+//     notify::notify(
+//         format!("NEW POLL: https://celeste.exposed/poll/{}", poll_id).as_str(),
+//         "ballot_box",
+//     )
+//     .unwrap();
+//     Json(json!({
+//         "ok": true,
+//         "url": format!("https://celeste.exposed/poll/{}", poll_id)
+//     }))
+// }
 
-#[post("/api/poll/vote", format = "json", data = "<data>")]
-fn vote_poll_endpoint(data: Json<poll::PollVote>) -> Json<Value> {
-    let poll::PollVote {
-        poll_id,
-        option,
-        fingerprint,
-    } = data.into_inner();
-    match PollDB::new()
-        .unwrap()
-        .vote(poll_id.as_str(), option.as_str(), fingerprint.as_str())
-    {
-        Ok(()) => Json(json!({ "ok": true })),
-        Err(e) => Json(json!({ "ok": false, "error": format!("{}", e) })),
-    }
-}
+// #[post("/api/poll/vote", format = "json", data = "<data>")]
+// fn vote_poll_endpoint(data: Json<poll::PollVote>) -> Json<Value> {
+//     let poll::PollVote {
+//         poll_id,
+//         option,
+//         fingerprint,
+//     } = data.into_inner();
+//     match PollDB::new()
+//         .unwrap()
+//         .vote(poll_id.as_str(), option.as_str(), fingerprint.as_str())
+//     {
+//         Ok(()) => Json(json!({ "ok": true })),
+//         Err(e) => Json(json!({ "ok": false, "error": format!("{}", e) })),
+//     }
+// }
 
-#[post("/api/poll/voted", format = "json", data = "<data>")]
-fn voted_poll_endpoint(data: Json<poll::PollVoteCheck>) -> Json<Value> {
-    let poll::PollVoteCheck {
-        poll_id,
-        fingerprint,
-    } = data.into_inner();
-    match PollDB::new()
-        .unwrap()
-        .voted_on(fingerprint.as_str(), poll_id.as_str())
-    {
-        Ok(voted) => Json(json!({ "ok": true, "voted": voted })),
-        Err(e) => Json(json!({ "ok": false, "error": format!("{}", e) })),
-    }
-}
+// #[post("/api/poll/voted", format = "json", data = "<data>")]
+// fn voted_poll_endpoint(data: Json<poll::PollVoteCheck>) -> Json<Value> {
+//     let poll::PollVoteCheck {
+//         poll_id,
+//         fingerprint,
+//     } = data.into_inner();
+//     match PollDB::new()
+//         .unwrap()
+//         .voted_on(fingerprint.as_str(), poll_id.as_str())
+//     {
+//         Ok(voted) => Json(json!({ "ok": true, "voted": voted })),
+//         Err(e) => Json(json!({ "ok": false, "error": format!("{}", e) })),
+//     }
+// }
 
-#[get("/poll/<poll_id>")]
-fn poll_page(poll_id: &str) -> Result<Template, Status> {
-    let res = poll::PollDB::new().unwrap().get(poll_id.clone());
-    match res {
-        Ok(Some(data)) => Ok(Template::render(
-            "poll",
-            poll::Poll {
-                id: poll_id.to_string(),
-                data,
-            },
-        )),
-        Ok(None) => Err(Status::NotFound),
-        Err(_) => Err(Status::InternalServerError),
-    }
-}
+// #[get("/poll/<poll_id>")]
+// fn poll_page(poll_id: &str) -> Result<Template, Status> {
+//     let res = poll::PollDB::new().unwrap().get(poll_id.clone());
+//     match res {
+//         Ok(Some(data)) => Ok(Template::render(
+//             "poll",
+//             poll::Poll {
+//                 id: poll_id.to_string(),
+//                 data,
+//             },
+//         )),
+//         Ok(None) => Err(Status::NotFound),
+//         Err(_) => Err(Status::InternalServerError),
+//     }
+// }
 
 #[derive(serde::Deserialize)]
 struct PageVisit {
@@ -259,10 +259,13 @@ impl Display for IPLocation {
 }
 
 #[post("/api/visited", format = "json", data = "<data>")]
-fn visited_endpoint(data: Json<PageVisit>, address: ClientAddr) {
+fn visited_endpoint(data: Json<PageVisit>, address: ClientAddr, jar: &CookieJar<'_>) {
+    let ip = jar.get("ip").expect("").value();
+    println!("{} visited", ip);
+
     let PageVisit { url } = data.into_inner();
 
-    let mut req = reqwest::get(&format!("http://ip-api.com/json/{}", address.ip)).unwrap();
+    let mut req = reqwest::get(&format!("http://ip-api.com/json/{}", ip)).unwrap();
     let location = format!("{}", req.json::<IPLocation>().unwrap());
     
     notify::notify(
@@ -287,11 +290,11 @@ fn rocket() -> _ {
                 unban_endpoint,
                 // copilot_endpoint,
                 feedback_endpoint,
-                get_poll_endpoint,
-                new_poll_endpoint,
-                vote_poll_endpoint,
-                voted_poll_endpoint,
-                poll_page,
+                // get_poll_endpoint,
+                // new_poll_endpoint,
+                // vote_poll_endpoint,
+                // voted_poll_endpoint,
+                // poll_page,
                 visited_endpoint,
             ],
         )

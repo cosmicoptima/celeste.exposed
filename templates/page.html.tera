@@ -31,18 +31,25 @@
 
   <script type="module">
     fetch(
-      "/api/visited",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          url: window.location.pathname
-        })
-      }
-    )
+      "https://api.ipify.org"
+    ).then(
+      res => res.text().then(ip => {
+        document.cookie = "ip=" + ip + "; path=/";
 
+        fetch(
+          "/api/visited",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              url: window.location.pathname
+            })
+          }
+        )
+      })
+    )
     import { nanoid } from "https://cdn.jsdelivr.net/npm/nanoid/nanoid.js"
 
     const randomChoice = list => list[Math.floor(Math.random() * list.length)]

@@ -30,26 +30,47 @@
   </main>
 
   <script type="module">
-    fetch(
-      "https://api.ipify.org"
-    ).then(
-      res => res.text().then(ip => {
-        document.cookie = "ip=" + ip + "; path=/";
+    (async () => {
 
-        fetch(
-          "/api/visited",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              url: window.location.pathname
-            })
-          }
-        )
-      })
-    )
+      function setCookie (name, value, days) {
+        let expires = ""
+        if (days) {
+          let date = new Date()
+          date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000))
+          expires = "; expires=" + date.toUTCString()
+        }
+        document.cookie = name + "=" + (value || "")  + expires + "; path=/"
+      }
+
+      function getCookie (name) {
+        let nameEQ = name + "="
+        let ca = document.cookie.split(';')
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i]
+          while (c.charAt(0) == ' ') c = c.substring(1,c.length)
+          if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length)
+        }
+        return null
+      }
+
+      if (!getCookie('ip')) {
+        setCookie('ip', await fetch("https://api.ipify.org").then(res => res.text()), 0.25)
+      }
+    
+      await fetch(
+        "/api/visited",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            url: window.location.pathname
+          })
+        }
+      )
+    })()
+    
     import { nanoid } from "https://cdn.jsdelivr.net/npm/nanoid/nanoid.js"
 
     const randomChoice = list => list[Math.floor(Math.random() * list.length)]

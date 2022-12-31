@@ -12,11 +12,11 @@ use poll::PollDB;
 extern crate rocket;
 use rocket::{
     fs::NamedFile,
-    http::Status,
+    http::{Status, Cookie, CookieJar},
     response::status,
     serde::json::Json,
     shield::{Frame, Shield},
-    Request,
+    Request
 };
 use rocket_client_addr::ClientAddr;
 use rocket_dyn_templates::Template;
@@ -116,7 +116,7 @@ fn json_error(status: Status, message: String) -> status::Custom<Json<Value>> {
 //     } = data.into_inner();
 //     let temperature = temperature.unwrap_or(1.0);
 //     let top_p = top_p.unwrap_or(0.9);
-//
+
 //     match notify::notify(
 //         format!("copilot request with prompt: {}", prompt.clone()).as_str(),
 //         "airplane",
@@ -124,7 +124,7 @@ fn json_error(status: Status, message: String) -> status::Custom<Json<Value>> {
 //         Ok(_) => (),
 //         Err(e) => return Err(json_error(Status::InternalServerError, e.to_string())),
 //     }
-//
+
 //     let output = copilot::get_copilot(prompt, max_tokens, temperature, top_p);
 //     match output {
 //         Ok(output) => Ok(Json(json!({ "ok": true, "output": output }))),
@@ -259,10 +259,23 @@ impl Display for IPLocation {
 }
 
 #[post("/api/visited", format = "json", data = "<data>")]
-fn visited_endpoint(data: Json<PageVisit>, address: ClientAddr) {
+fn visited_endpoint(data: Json<PageVisit>, address: ClientAddr, jar: &CookieJar<'_>) {
+    let cookie = jar.get("ip");
+
+    let mut ip = match cookie {
+        Some(cookie) => cookie.value(),
+        None => "",
+    };
+
+    let server_ip = format!("{}", address.ip);
+
+    if ip == "" {
+        ip = &server_ip;
+    }
+
     let PageVisit { url } = data.into_inner();
 
-    let mut req = reqwest::get(&format!("http://ip-api.com/json/{}", address.ip)).unwrap();
+    let mut req = reqwest::get(&format!("http://ip-api.com/json/{}", ip)).unwrap();
     let location = format!("{}", req.json::<IPLocation>().unwrap());
     
     notify::notify(

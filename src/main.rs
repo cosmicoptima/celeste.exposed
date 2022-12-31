@@ -104,33 +104,33 @@ fn json_error(status: Status, message: String) -> status::Custom<Json<Value>> {
     status::Custom(status, Json(json!({ "error": message })))
 }
 
-#[post("/api/copilot", format = "json", data = "<data>")]
-fn copilot_endpoint(
-    data: Json<copilot::Request>,
-) -> Result<Json<Value>, status::Custom<Json<Value>>> {
-    let copilot::Request {
-        prompt,
-        max_tokens,
-        temperature,
-        top_p,
-    } = data.into_inner();
-    let temperature = temperature.unwrap_or(1.0);
-    let top_p = top_p.unwrap_or(0.9);
+// #[post("/api/copilot", format = "json", data = "<data>")]
+// fn copilot_endpoint(
+//     data: Json<copilot::Request>,
+// ) -> Result<Json<Value>, status::Custom<Json<Value>>> {
+//     let copilot::Request {
+//         prompt,
+//         max_tokens,
+//         temperature,
+//         top_p,
+//     } = data.into_inner();
+//     let temperature = temperature.unwrap_or(1.0);
+//     let top_p = top_p.unwrap_or(0.9);
 
-    match notify::notify(
-        format!("copilot request with prompt: {}", prompt.clone()).as_str(),
-        "airplane",
-    ) {
-        Ok(_) => (),
-        Err(e) => return Err(json_error(Status::InternalServerError, e.to_string())),
-    }
+//     match notify::notify(
+//         format!("copilot request with prompt: {}", prompt.clone()).as_str(),
+//         "airplane",
+//     ) {
+//         Ok(_) => (),
+//         Err(e) => return Err(json_error(Status::InternalServerError, e.to_string())),
+//     }
 
-    let output = copilot::get_copilot(prompt, max_tokens, temperature, top_p);
-    match output {
-        Ok(output) => Ok(Json(json!({ "ok": true, "output": output }))),
-        Err(_) => Err(json_error(Status::BadRequest, "...".to_string())),
-    }
-}
+//     let output = copilot::get_copilot(prompt, max_tokens, temperature, top_p);
+//     match output {
+//         Ok(output) => Ok(Json(json!({ "ok": true, "output": output }))),
+//         Err(_) => Err(json_error(Status::BadRequest, "...".to_string())),
+//     }
+// }
 
 #[get("/api/ban")]
 fn ban_endpoint(address: ClientAddr) -> status::Custom<()> {
@@ -298,7 +298,7 @@ fn rocket() -> _ {
                 other_file,
                 ban_endpoint,
                 unban_endpoint,
-                copilot_endpoint,
+                // copilot_endpoint,
                 feedback_endpoint,
                 get_poll_endpoint,
                 new_poll_endpoint,

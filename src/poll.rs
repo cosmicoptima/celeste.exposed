@@ -71,13 +71,10 @@ impl PollDB {
     pub fn create(&mut self, options: Vec<String>) -> Result<String> {
         let poll_id = nanoid!(10);
 
-        let mut votes = vec![];
-        for option in options {
-            votes.push(PollOption {
-                name: option,
-                votes: 0,
-            });
-        }
+        let votes: Vec<_> = options.into_iter().map(|option| PollOption {
+            name: option,
+            votes: 0,
+        }).collect();
 
         self.conn.set(&poll_id, serialize(&votes)?)?;
         Ok(poll_id)

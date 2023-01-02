@@ -30,65 +30,59 @@
   {% endfor %}
   <button id="submit-poll" style="margin-top: 1em;">submit &amp; see results</button>
   <script type="text/javascript">
-      const pollID = "{{id}}"
-      var fingerprint
-
-      const fpPromise = import('https://openfpcdn.io/fingerprintjs/v3')
-        .then(FingerprintJS => FingerprintJS.load())
-      fpPromise
-        .then(fp => fp.get())
-        .then(result => {
-          fingerprint = result.visitorId
-          let xhr = new XMLHttpRequest()
-          xhr.open('POST', '/api/poll/voted')
-          xhr.setRequestHeader('Content-Type', 'application/json')
-          xhr.onreadystatechange = () => {
-            if (xhr.readyState === 4) {
-              let response = JSON.parse(xhr.response)
-              if (response.voted) { submit(false) }
-            }
+    const pollID = "{{id}}";
+    let fingerprint;
+    import("https://openfpcdn.io/fingerprintjs/v3")
+      .then(FingerprintJS => FingerprintJS.load())
+      .then(fp => fp.get())
+      .then(result => {
+        fingerprint = result.visitorId;
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/poll/voted");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState === 4) {
+            const response = JSON.parse(xhr.response);
+            if (response.voted) { submit(); }
           }
-          xhr.send(JSON.stringify({
-            poll_id: pollID,
-            fingerprint: fingerprint
-          }))
-        })
+        };
+        xhr.send(JSON.stringify({
+          poll_id: pollID,
+          fingerprint
+        }))
+      });
 
       function submit() {
         fetch(`/api/poll/get/${pollID}`).then(response => response.json()).then(data => {
-          let votes = data.poll.votes
-          let totalVotes = votes.reduce((acc, cur) => acc + cur.votes, 0)
+          const { votes } = data.poll;
+          const totalVotes = votes.reduce((acc, cur) => acc + cur.votes, 0);
 
-          options = document.getElementsByName("poll")
-          let index = 1
-          for (option in options) {
-            var voteSpan = document.getElementById(`votes-${index}`)
+          const options = document.getElementsByName("poll");
+          for (const [index, option] of options.entries()) {
+            const voteSpan = document.getElementById(`votes-${index - 1}`);
 
-            if (options[option].checked) {
-              xhr = new XMLHttpRequest()
-              xhr.open("POST", "/api/poll/vote", true)
-              xhr.setRequestHeader("Content-Type", "application/json")
+            if (option.checked) {
+              const xhr = new XMLHttpRequest();
+              xhr.open("POST", "/api/poll/vote", true);
+              xhr.setRequestHeader("Content-Type", "application/json");
               xhr.send(JSON.stringify({
                 poll_id: pollID,
                 option: document.getElementById(`name-${index}`).innerHTML,
-                fingerprint: fingerprint
-              }))
+                fingerprint
+              }));
             }
 
             try {
-              voteSpan.innerHTML = `[${votes[index - 1].votes}/${totalVotes}]`
-              voteSpan.style.display = "inline"
-            }
-            catch (e) { }
-
-            index++
+              voteSpan.innerText = `[${votes[index].votes}/${totalVotes}]`;
+              voteSpan.style.display = "inline";
+            } catch { }
           }
 
-          document.getElementById("submit-poll").style.display = "none"
+          document.getElementById("submit-poll").style.display = "none";
         })
       }
 
-      document.getElementById("submit-poll").onclick = () => submit(true)
+      document.getElementById("submit-poll").onclick = () => submit();
   </script>
 </body>
 </html>

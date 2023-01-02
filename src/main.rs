@@ -262,22 +262,21 @@ impl Display for IPLocation {
 fn visited_endpoint(data: Json<PageVisit>, address: ClientAddr, jar: &CookieJar<'_>) {
     let cookie = jar.get("ip");
 
-    let mut ip = match cookie {
-        Some(cookie) => cookie.value(),
-        None => "",
+    let ip = cookie.map_or(|cookie| cookie.value(), "");
+
+    let server_ip;
+    let ip = if ip == "" {
+        server_ip = format!("{}", address.ip);
+        &server_ip
+    } else {
+        ip
     };
-
-    let server_ip = format!("{}", address.ip);
-
-    if ip == "" {
-        ip = &server_ip;
-    }
 
     let PageVisit { url } = data.into_inner();
 
     let mut req = reqwest::get(&format!("http://ip-api.com/json/{}", ip)).unwrap();
     let location = format!("{}", req.json::<IPLocation>().unwrap());
-    
+
     notify::notify(
         format!("VISIT: {} from {}", url, location).as_str(),
         "eye",

@@ -1,9 +1,5 @@
 @media screen and (max-width: 600px) {
-    a {
-        font-size: 0.9em;
-    }
-
-    p {
+    a, p {
         font-size: 0.9em;
     }
 }

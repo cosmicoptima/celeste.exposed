@@ -64,12 +64,9 @@ fn parse_token(input: &str) -> IResult<&str, String> {
 
     let error_str = "Could not parse JSON";
 
-    match serde_json::from_str::<Value>(json) {
-        Ok(value) => match &value["choices"][0]["text"] {
-            Value::String(token) => Ok((input, token.to_string())),
-            _ => fail(error_str),
-        },
-        Err(_) => fail(error_str),
+    match serde_json::from_str::<Value>(json).map(|value| &value["choices"][0]["text"]) {
+        Ok(Value::String(token)) => Ok((input, token.to_string())),
+        _ => fail(error_str),
     }
 }
 

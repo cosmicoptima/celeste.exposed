@@ -35,16 +35,19 @@ function createPoll() {
      }
   }
 
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", "/api/poll/create", true);
-  xhr.setRequestHeader("Content-Type", "application/json");
-  xhr.onreadystatechange = () => {
-    if (xhr.readyState === 4) {
-      const { url } = JSON.parse(xhr.response);
+  fetch("/api/poll/create", {
+    method: "POST",
+    credentials: "omit",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(options)
+  }).then(
+    async response => {
+      const { url } = await response.json();
       document.getElementById("poll-success").innerHTML = `paste the following link into your tweet: <a href="${url}">${url}</a>`;
     }
-  }
-  xhr.send(JSON.stringify(options));
+  );
 }
 
 document.getElementById("add-option").onclick = addOption;

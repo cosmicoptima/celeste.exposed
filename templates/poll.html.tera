@@ -37,19 +37,19 @@
       .then(fp => fp.get())
       .then(result => {
         fingerprint = result.visitorId;
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/poll/voted");
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.onreadystatechange = () => {
-          if (xhr.readyState === 4) {
-            const response = JSON.parse(xhr.response);
-            if (response.voted) { submit(); }
-          }
-        };
-        xhr.send(JSON.stringify({
-          poll_id: pollID,
-          fingerprint
-        }))
+        fetch("/api/poll/voted", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            poll_id: pollID,
+            fingerprint
+          })
+        }).then(async reponse => {
+          const { voted } = await response.json();
+          if (voted) { submit(); }
+        });
       });
 
       function submit() {
@@ -62,14 +62,18 @@
             const voteSpan = document.getElementById(`votes-${index - 1}`);
 
             if (option.checked) {
-              const xhr = new XMLHttpRequest();
-              xhr.open("POST", "/api/poll/vote", true);
-              xhr.setRequestHeader("Content-Type", "application/json");
-              xhr.send(JSON.stringify({
-                poll_id: pollID,
-                option: document.getElementById(`name-${index}`).innerHTML,
-                fingerprint
-              }));
+              fetch("/api/poll/vote", {
+                method: "POST",
+                credentials: "omit",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  poll_id: pollID,
+                  option: document.getElementById(`name-${index}`).innerHTML,
+                  fingerprint
+                })
+              });
             }
 
             try {

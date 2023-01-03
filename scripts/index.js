@@ -6,18 +6,19 @@ const wikidata = require("wikidata-sdk");
 
 let rows = {};
 
-const randomChoice = list => list[Math.floor(Math.random() * list.length)]
+const randomChoice = list => list[Math.floor(Math.random() * list.length)];
 
-const randomProperty = f => f(randomChoice(rows))
+const randomProperty = f => f(randomChoice(rows));
 
 const randomTriple = f => {
   randomProperty(([propertyID, propertyName]) => {
     // id properties aren't very fun; we will (try to) forbid them
-    for (let word of ["code", "id", "identifier", "slug"])
-      if (propertyName.toLowerCase().includes(word)) {
-        randomTriple(f)
-        return
-      }
+    if (
+      ["code", "id", "identifier", "slug"].some(word => propertyName.toLowerCase().includes(word))
+    ) {
+      randomTriple(f);
+      return;
+    }
 
     const query = `
       SELECT ?aLabel ?bLabel
@@ -25,40 +26,43 @@ const randomTriple = f => {
         ?a wdt:${propertyID} ?b.
         SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
       }
-      LIMIT 100`
+      LIMIT 100`;
 
     axios.get(wikidata.sparqlQuery(query)).then((res) => {
-      const choices = res.data.results.bindings
+      const choices = res.data.results.bindings;
 
       if (choices.length > 0) {
-        const choice = randomChoice(choices)
+        const choice = randomChoice(choices);
         const [a, b] = [choice.aLabel.value, choice.bLabel.value];
 
         // unnamed objects aren't very fun either
         // (such objects have labels like Q123456789)
         if (!isNaN(parseInt(a.slice(1)))) {
-          randomTriple(f)
-          return
+          randomTriple(f);
+          return;
         }
 
-        if (b.startsWith("http://") || b.startsWith("https://"))
-          b = "<a href='" + b + "'>[link]</a>"
+        if (b.startsWith("http://") || b.startsWith("https://")) {
+          b = "<a href='" + b + "'>[link]</a>";
+        }
 
-        f(a, propertyName, b)
+        f(a, propertyName, b);
+      } else {
+        randomTriple(f);
       }
-      else randomTriple(f)
-    })
-  })
-}
+    });
+  });
+};
 
 function setFunFact(a, p, b) {
-  let pFirstWord = p.split(" ")[0];
+  const [pFirstWord] = p.split(" ");
+  let prefix;
   if (pFirstWord.endsWith("ed") || p.endsWith(" of") || p.endsWith(" to")) {
-    var prefix = "is ";
+    prefix = "is ";
   } else if (pFirstWord.endsWith("s")) {
-    var prefix = "";
+    prefix = "";
   } else {
-    var prefix = "has ";
+    prefix = "has ";
   }
 
   document.getElementById(
@@ -99,29 +103,31 @@ function coinflip() {
   );
 }
 
-document.getElementById("celeste").innerHTML += " " + getEmoji()
+document.getElementById("celeste").innerHTML += " " + getEmoji();
 
 scriptjs(
   "https://cdn.jsdelivr.net/npm/jaaulde-cookies/lib/jaaulde-cookies.min.js",
   () => {
-    var visits = parseInt(cookies.get("visits"));
-    if (isNaN(visits)) visits = 1;
-    else visits++;
+    const visits = (parseInt(cookies.get("visits")) || 0) + 1;
     cookies.set("visits", visits);
 
+    let visitMessage;
     if (visits < 1) {
-      var visitMessage = `you have apparently visited this site ${visits} times.`;
+      visitMessage = `you have apparently visited this site ${visits} times.`;
     } else if (visits === 1) {
-      var visitMessage = "you have visited this site 1 time. welcome!";
-    } else if (visits < 5) {
-      var visitMessage = `you have visited this site ${visits} times. that is a normal amount.`;
-    } else if (visits < 25) {
-      var visitMessage = `you have visited this site ${visits} times. are you procrastinating?`;
+      visitMessage = "you have visited this site 1 time. welcome!";
     } else {
-      var visitMessage = `you have visited this site ${visits} times. this is getting creepy!`;
+      visitMessage = `you have visited this site ${visits} times. `;
+      if (visits < 5) {
+        visitMessage += `that is a normal amount.`;
+      } else if (visits < 25) {
+        visitMessage += `are you procrastinating?`;
+      } else {
+        visitMessage += `this is getting creepy!`;
+      }
     }
 
-    document.getElementById("subheader").innerHTML = randomChoice([
+    document.getElementById("subheader").innerText = randomChoice([
       visitMessage,
       visitMessage,
       visitMessage,
@@ -134,12 +140,12 @@ scriptjs(
   }
 );
 
-var allLinksVisible = false;
+let allLinksVisible = false;
 function toggleLinks() {
   allLinksVisible = !allLinksVisible;
   document.getElementById("more-links").style.display = allLinksVisible ? "block" : "none";
-  document.getElementById("show-more-links").innerHTML = allLinksVisible ? "hide graveyard…" : "show graveyard…";
-  document.getElementById("show-more-links-plus-minus").innerHTML = allLinksVisible ? "-" : "+";
+  document.getElementById("show-more-links").innerText = allLinksVisible ? "hide graveyard…" : "show graveyard…";
+  document.getElementById("show-more-links-plus-minus").innerText = allLinksVisible ? "-" : "+";
 }
 document.getElementById("show-more-links").onclick = toggleLinks;
 
@@ -205,35 +211,36 @@ document.getElementById("show-more-links").onclick = toggleLinks;
 // }
 // document.getElementById("randomize-css").onclick = randomizeCSS;
 
-document.getElementById("flip-a-coin").onclick = coinflip
+document.getElementById("flip-a-coin").onclick = coinflip;
 
 document.getElementById("dont-go-home").onclick = () => {
-  document.getElementById("dont-go-home-text").innerHTML = "you're already here, idiot"
-  document.getElementById("dont-go-home-text").style.opacity = 1.0
+  const dontGoHomeText = document.getElementById("dont-go-home-text");
+  dontGoHomeText.innerText = "you're already here, idiot";
+  dontGoHomeText.style.opacity = 1.0;
   setTimeout(
     () => {
-      let opacity = 1.0
-      let interval = setInterval(
+      let opacity = 1.0;
+      const interval = setInterval(
         () => {
-          opacity -= 0.01
+          opacity -= 0.01;
           if (opacity < 0) {
-            clearInterval(interval)
-            opacity = 0
+            clearInterval(interval);
+            opacity = 0;
           }
-          document.getElementById("dont-go-home-text").style.opacity = opacity
+          dontGoHomeText.style.opacity = opacity;
         },
         7,
-      )
+      );
     },
     1250,
-  )
-}
+  );
+};
 
 document.getElementById("submit-feedback").onclick = () => {
-  const feedback = document.getElementById("feedback-box").value
-  axios.post("/api/feedback", { feedback })
-  document.getElementById("feedback-box").value = ""
-}
+  const feedbackBox = document.getElementById("feedback-box");
+  axios.post("/api/feedback", { feedback: feedbackBox.value });
+  feedbackBox.value = "";
+};
 
 axios.get("https://quarry.wmcloud.org/run/45013/output/1/json").then((res) => {
   // wait till the data is loaded to enable the reload button and load the initial triple

@@ -13,40 +13,40 @@ create a twitter poll with more than four options
 <p id="poll-success"></p>
 
 <script>
-var numOptions = 2
+let numOptions = 2;
 
 function addOption() {
-  numOptions++
-  let element = document.createElement("div")
-  element.classList.add("poll-row")
-  element.innerHTML = `<input id="option-${numOptions}" placeholder="option ${numOptions}"/>`
-  document.getElementById("poll-options").appendChild(element)
+  numOptions++;
+  const element = document.createElement("div");
+  element.classList.add("poll-row");
+  element.innerHTML = `<input id="option-${numOptions}" placeholder="option ${numOptions}"/>`;
+  document.getElementById("poll-options").appendChild(element);
 }
 
 function createPoll() {
-  var options = []
-  for (let i = 1; i <= numOptions; i++) {
-    options.push(document.getElementById(`option-${i}`).value)
-  }
-  for (option in options) {
-    if (options[option] === "") {
-       document.getElementById("poll-error").innerHTML = "option can't be empty"
-       return
+  const options = new Array(numOptions).fiill().map(
+    (_, i) => document.getElementById(`option-${i + 1}`).value
+  );
+
+  for (const option of options) {
+    if (option === "") {
+       document.getElementById("poll-error").innerHTML = "option can't be empty";
+       return;
      }
   }
-  
-  var xhr = new XMLHttpRequest()
-  xhr.open("POST", "/api/poll/create", true)
-  xhr.setRequestHeader("Content-Type", "application/json")
-  xhr.onreadystatechange = function () {
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "/api/poll/create", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.onreadystatechange = () => {
     if (xhr.readyState === 4) {
-      var url = JSON.parse(xhr.response).url
-      document.getElementById("poll-success").innerHTML = `paste the following link into your tweet: <a href="${url}">${url}</a>`
+      const { url } = JSON.parse(xhr.response);
+      document.getElementById("poll-success").innerHTML = `paste the following link into your tweet: <a href="${url}">${url}</a>`;
     }
   }
-  xhr.send(JSON.stringify(options))
+  xhr.send(JSON.stringify(options));
 }
 
-document.getElementById("add-option").onclick = addOption
-document.getElementById("create-poll").onclick = createPoll
+document.getElementById("add-option").onclick = addOption;
+document.getElementById("create-poll").onclick = createPoll;
 </script>

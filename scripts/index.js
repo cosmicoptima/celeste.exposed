@@ -119,11 +119,11 @@ scriptjs(
     } else {
       visitMessage = `you have visited this site ${visits} times. `;
       if (visits < 5) {
-        visitMessage += `that is a normal amount.`;
+        visitMessage += "that is a normal amount.";
       } else if (visits < 25) {
-        visitMessage += `are you procrastinating?`;
+        visitMessage += "are you procrastinating?";
       } else {
-        visitMessage += `this is getting creepy!`;
+        visitMessage += "this is getting creepy!";
       }
     }
 

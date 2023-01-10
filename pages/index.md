@@ -3,7 +3,7 @@
 <span id="subheader">...</span>
 
 \- [about](/about)\
-\- [discord (say hi)](https://discord.com/users/140541286498304000)\
+\- [celestecord](https://discord.gg/SvWDJe3PCS)\
 \- [twitter](https://twitter.com/parafactual)\
 \- [github](https://github.com/cosmicoptima)
 

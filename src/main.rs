@@ -12,7 +12,7 @@ use poll::PollDB;
 extern crate rocket;
 use rocket::{
     fs::NamedFile,
-    http::{Status, Cookie, CookieJar},
+    http::{Status, CookieJar},
     response::status,
     serde::json::Json,
     shield::{Frame, Shield},
@@ -285,6 +285,52 @@ fn visited_endpoint(data: Json<PageVisit>, address: ClientAddr, jar: &CookieJar<
     .unwrap();
 }
 
+#[derive(serde::Deserialize)]
+struct TextSynthRequest {
+    api_key: String,
+    model: String,
+    prompt: String,
+    max_tokens: u32,
+    n: u32,
+    temperature: f32,
+    top_p: f32,
+}
+
+#[post("/api/textsynth", format = "json", data = "<data>")]
+fn textsynth_endpoint(data: Json<TextSynthRequest>) -> Json<Value> {
+    let TextSynthRequest {
+        api_key,
+        model,
+        prompt,
+        max_tokens,
+        n,
+        temperature,
+        top_p,
+    } = data.into_inner();
+
+    let client = reqwest::Client::new();
+    let url = format!("https://api.textsynth.com/v1/engines/{}/completions", model);
+    eprintln!("url: {}", url);
+    let response: Value = client.post(&url)
+        .json(&json!({
+            "prompt": prompt,
+            "max_tokens": max_tokens,
+            "n": n,
+            "temperature": temperature,
+            "top_p": top_p,
+        }))
+        .header("Authorization", format!("Bearer {}", api_key))
+        .send()
+        .unwrap()
+        .json()
+        .unwrap();
+
+    Json(json!({
+        "ok": true,
+        "response": response
+    }))
+}
+
 // main
 
 #[launch]
@@ -306,6 +352,7 @@ fn rocket() -> _ {
                 voted_poll_endpoint,
                 poll_page,
                 visited_endpoint,
+                textsynth_endpoint,
             ],
         )
         .register("/", catchers![on_403, on_404])

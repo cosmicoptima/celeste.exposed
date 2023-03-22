@@ -19,6 +19,7 @@ use rocket::{
     Request
 };
 use rocket_client_addr::ClientAddr;
+use rocket_cors::CorsOptions;
 use rocket_dyn_templates::Template;
 
 use comrak::{markdown_to_html, ComrakExtensionOptions, ComrakOptions, ComrakRenderOptions};
@@ -358,4 +359,5 @@ fn rocket() -> _ {
         .register("/", catchers![on_403, on_404])
         .attach(Template::fairing())
         .attach(Shield::default().disable::<Frame>())
+        .attach(CorsOptions::default().to_cors().unwrap())
 }

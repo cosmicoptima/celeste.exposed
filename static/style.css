@@ -169,3 +169,10 @@ textarea {
         width: calc(100vw - 2em);
     }
 }
+
+img.emoji {
+   height: 1em;
+   width: 1em;
+   margin: 0;
+   vertical-align: -0.1em;
+}

@@ -57,7 +57,7 @@
       }
 
       if (!getCookie('ip')) {
-        setCookie('ip', await fetch("https://api.ipify.org").then(res => res.text()), 0.25)
+        setCookie('ip', await fetch("https://celeste.exposed/api/ip").then(res => res.text()), 0.25)
       }
     
       await fetch(

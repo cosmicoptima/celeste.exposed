@@ -98,6 +98,7 @@
         () => document.getElementById(`celeste-tip-${id}`).style.display = "none",
         true,
       )
+      twemoji.parse(document.getElementById(`celeste-tip-${id}`))
     }
 
     const newMinute = () => {

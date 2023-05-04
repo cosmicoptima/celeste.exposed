@@ -3,7 +3,7 @@
 <span id="subheader">...</span>
 
 \- [about](/about)\
-\- ~~celestecord~~ (coming soon)\
+\- <strike>celestecord</strike> (coming soon)\
 \- [twitter](https://twitter.com/parafactual)\
 \- [github](https://github.com/cosmicoptima)
 

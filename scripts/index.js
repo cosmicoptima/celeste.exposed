@@ -101,6 +101,17 @@ function coinflip() {
 
 document.getElementById("celeste").innerHTML += " " + getEmoji()
 
+document.getElementById("coelostat").innerHTML = randomChoice([
+  "coelostat",
+  "coelostat llc",
+  "coelostat institute",
+  "CIS",
+  "infohazards",
+  "infohazards.org",
+  "pricing",
+  "services"
+]);
+
 scriptjs(
   "https://cdn.jsdelivr.net/npm/jaaulde-cookies/lib/jaaulde-cookies.min.js",
   () => {

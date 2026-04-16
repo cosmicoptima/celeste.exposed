@@ -175,3 +175,33 @@ img.emoji {
    margin: 0;
    vertical-align: -0.1em;
 }
+
+.latents-grid {
+    display: flex;
+    gap: 0.5em;
+}
+
+.latents-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.latents-grid img,
+.latents-grid video {
+    width: 100%;
+    display: block;
+}
+
+.latents-wide img {
+    width: 100%;
+    display: block;
+    margin: 0.5em 0;
+}
+
+@media screen and (max-width: 900px) {
+    .latents-grid {
+        flex-direction: column;
+    }
+}

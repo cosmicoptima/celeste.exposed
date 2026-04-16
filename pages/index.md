@@ -9,7 +9,8 @@
 
 \- [alignment charts](/alignment)\
 \- [create a poll](/poll)\
-\- [ads](/ads)
+\- [ads](/ads)\
+\- [latents](/latents)
 
 <span id="show-more-links-plus-minus">+</span>
 <a id="show-more-links" href="javascript:void">show graveyard…</a>

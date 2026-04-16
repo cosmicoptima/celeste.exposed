@@ -79,7 +79,7 @@ impl PollDB {
             });
         }
 
-        self.conn.set(&poll_id, serialize(&votes)?)?;
+        self.conn.set::<_, _, ()>(&poll_id, serialize(&votes)?)?;
         Ok(poll_id)
     }
 
@@ -88,7 +88,7 @@ impl PollDB {
             return Ok(());
         }
         self.conn
-            .set(format!("{}:{}", poll_id, fingerprint), option)?;
+            .set::<_, _, ()>(format!("{}:{}", poll_id, fingerprint), option)?;
 
         if let Some(poll_data) = self.get(poll_id)? {
             let mut votes = poll_data.votes;
@@ -97,7 +97,7 @@ impl PollDB {
                     vote.votes += 1;
                 }
             }
-            self.conn.set(poll_id, serialize(&votes)?)?;
+            self.conn.set::<_, _, ()>(poll_id, serialize(&votes)?)?;
         } else {
             return Err(anyhow!("Poll not found"));
         }

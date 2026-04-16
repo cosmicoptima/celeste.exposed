@@ -43,9 +43,10 @@ struct Page {
 }
 
 fn render(title: &str, path: &str, address: IpAddr) -> Result<Template, Status> {
-    let mut ban_db = BanDB::new().unwrap();
-    if ban_db.is_banned(address).unwrap() {
-        return Err(Status::Forbidden);
+    if let Ok(mut ban_db) = BanDB::new() {
+        if ban_db.is_banned(address).unwrap_or(false) {
+            return Err(Status::Forbidden);
+        }
     }
     
     let body = fs::read_to_string(path).map_err(|_| Status::NotFound)?;
@@ -84,19 +85,26 @@ async fn index_page(address: ClientAddr) -> Result<Template, Status> {
     render("index", "pages/index.md", address.ip)
 }
 
-#[get("/<file>")]
-async fn other_file(file: String, address: ClientAddr) -> Result<NamedFile, Result<Template, Status>> {
-    match NamedFile::open(Path::new("static/").join(PathBuf::from(&file)))
+#[get("/latents/<file>")]
+async fn latents_file(file: String) -> Option<NamedFile> {
+    NamedFile::open(Path::new("static/latents/").join(PathBuf::from(&file)))
         .await
         .ok()
-    {
-        Some(file) => Ok(file),
-        None => Err(render(
-            file.clone().as_str(),
-            format!("pages/{}.md", file).as_str(),
-            address.ip,
-        )),
+}
+
+#[get("/<file>")]
+async fn other_file(file: String, address: ClientAddr) -> Result<NamedFile, Result<Template, Status>> {
+    let static_path = Path::new("static/").join(PathBuf::from(&file));
+    if static_path.is_file() {
+        if let Ok(named_file) = NamedFile::open(&static_path).await {
+            return Ok(named_file);
+        }
     }
+    Err(render(
+        file.as_str(),
+        format!("pages/{}.md", file).as_str(),
+        address.ip,
+    ))
 }
 
 // api
@@ -342,6 +350,7 @@ fn rocket() -> _ {
             "/",
             routes![
                 index_page,
+                latents_file,
                 other_file,
                 ban_endpoint,
                 unban_endpoint,

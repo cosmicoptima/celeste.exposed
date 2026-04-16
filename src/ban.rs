@@ -26,12 +26,12 @@ impl BanDB {
     }
 
     pub fn ban(&mut self, ip: IpAddr) -> Result<()> {
-        self.conn.set(ip.to_string(), true)?;
+        self.conn.set::<_, _, ()>(ip.to_string(), true)?;
         Ok(())
     }
 
     pub fn unban(&mut self, ip: IpAddr) -> Result<()> {
-        self.conn.del(ip.to_string())?;
+        self.conn.del::<_, ()>(ip.to_string())?;
         Ok(())
     }
 
